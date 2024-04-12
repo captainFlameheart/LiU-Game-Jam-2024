@@ -1,0 +1,17 @@
+{
+  "name": "liu-game-jam-2024",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "start": "tsc && start src/index.html"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^5.4.4"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
+}
