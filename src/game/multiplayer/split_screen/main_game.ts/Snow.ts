@@ -44,7 +44,7 @@ class Snow {
             new DOMMatrix()
             .translate(this.position.getX(), this.position.getY())
             .scale(0.01 * this.scale)
-        )
+        );
         render.fillRect(
             region.start.getX(),
             region.start.getY(),
