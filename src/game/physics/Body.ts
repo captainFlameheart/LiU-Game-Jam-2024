@@ -110,6 +110,11 @@ class Body {
         ));
     }
 
+    setTrueAngularVelocity(trueAngularVelocity: number) {
+        this.angularVelocity =
+            trueAngularVelocity* this.physicsEngine.deltaTime;
+    }
+
     setTrueAcceleration(trueAcceleration: Vector2D) {
         console.log(this.physicsEngine.deltaTime);
         const deltaTime = this.physicsEngine.deltaTime;
@@ -117,6 +122,21 @@ class Body {
             trueAcceleration, deltaTime * deltaTime
         ));
     }
+
+
+        // Corresponding getters
+        getTrueVelocity(): Vector2D {
+            return Vector2D.divide(this.velocity, this.physicsEngine.deltaTime);
+        }
+    
+        getTrueAngularVelocity(): number {
+            return this.angularVelocity / this.physicsEngine.deltaTime;
+        }
+    
+        getTrueAcceleration(): Vector2D {
+            const deltaTime = this.physicsEngine.deltaTime;
+            return Vector2D.divide(this.acceleration, deltaTime * deltaTime);
+        }
 
     applyForce(trueForce: Vector2D){
         const deltaTime = this.physicsEngine.deltaTime
@@ -128,6 +148,12 @@ class Body {
         this.angularAcceleration += trueTorqe,deltaTime*deltaTime*this.angularAcceleration
     }
     
+    applyTureImpulse(trueImpulse: Vector2D){
+        const deltaTime = this.physicsEngine.deltaTime
+        this.velocity.addMultiplied(trueImpulse,deltaTime*this.lightness)
+
+    }
+
 
     applyDisplacedImpulseInDirection(
         displacement: Vector2D, direction: Vector2D, scalar: number

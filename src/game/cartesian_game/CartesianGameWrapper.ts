@@ -16,9 +16,10 @@ class CartesianGameWrapper implements Game {
         return new CartesianGameWrapper(cartesianGame, null);
     }
 
-    initialize(context: GameContext): void {
+    initialize(context: GameContext): Promise<null> {
         this.cartesianGameContext = CartesianGameContext.fromGameContext(context);
         this.cartesianGame.initialize(this.cartesianGameContext);
+        return new Promise(resolve => resolve(null));
     }
 
     requireCartesianGameContext() {

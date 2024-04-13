@@ -19,20 +19,27 @@ class Hat {
     body: any;
     player_index: number;
     static gravity: number = -3
+    height: number = 0
+    width: number = 0
 
-    constructor(game: any) {
+
+    constructor(game: any, player_index: number) {
         this.game = game;
         this.body = null;
-        this.player_index = 0;
+        this.player_index = player_index;
     }
 
     initialize(height: number, width: number, centerX: number, centerY: number) {
-        const material0 = Material.of(0.0, 0.0, 0.0);
+        const material0 = Material.of(0, 0.1, 0.0);
         const origin_move = -0 * height;
         const wall_thickness = 0.06 * width;
         const wall_height = 0.3 * height;
         const lip_height = 0.05 * height;
         const lip_outward = 0.2 * width;
+
+        this.width = width;
+        this.height = height;
+
 
         // Define polygons
         const polygons = [
@@ -71,7 +78,6 @@ class Hat {
         const hat_bottom = Body.of(this.game.physicsEngine);
         hat_bottom.position.set(Vector2D.cartesian(0, 5));
         hat_bottom.setTrueVelocity(Vector2D.cartesian(0, 0));
-
         hat_bottom.angularLightness = 10;
         hat_bottom.angle = Math.PI;
 
@@ -92,43 +98,115 @@ class Hat {
     }
 
 
-    tick(context: SplitScreenGameContext){
+    render(context: CanvasRenderingContext2D) {
+        const x = this.body.position.x;
+        const y = this.body.position.y;
+    
+        const reductionAmount = 0.2; // Amount by which to reduce the width and height from each side
+        const adjustedWidth = this.width - 2 * reductionAmount; // Reduce total width
+        const adjustedHeight = this.height - 2 * reductionAmount; // Reduce total height
+    
+        // Draw the bounding box
+        context.save();
+        context.translate(x, y);
+        context.rotate(this.body.angle);
+    
+        console.log('Rendering hat at:', x, y, 'with adjusted size:', adjustedWidth, adjustedHeight);
+    
+        context.beginPath();
+        // Start drawing from half the adjusted width/height back from center to keep it centered
+        context.rect(-adjustedWidth / 2, -adjustedHeight / 2, adjustedWidth, adjustedHeight);
+        context.fillStyle = 'red';
+        context.fill();
+        context.closePath();
+        context.restore();
+
+    }
+
+
+
+    tick(context: SplitScreenGameContext) {
 
         this.body.setTrueAcceleration(Vector2D.cartesian(0, Hat.gravity));
         const deltaTime = context.getTickDeltaTime();
         this.body.angularAcceleration = 0;
 
+        this.body.velocity.x = this.applyDamping(this.body.velocity.x, 0.5, context.getTickDeltaTime());
+        this.body.velocity.y = this.applyDamping(this.body.velocity.y, 0.5, context.getTickDeltaTime());
+        this.body.setTrueAngularVelocity(this.applyDamping(this.body.getTrueAngularVelocity(), 0.1, context.getTickDeltaTime()));
+
         const playerContext = context.getPlayerContext(this.player_index);
+        console.log(this.player_index)
+
+        const leftThumbstickVector = context.getLeftThumbstickVector(
+            this.player_index
+        );
+        leftThumbstickVector.clampToZeroIfLengthLessThan(
+            MainGame.THUMBSTICK_DEAD_ZONE
+        );
+        const rightThumbstickVector = context.getRightThumbstickVector(
+            this.player_index
+        );
+        rightThumbstickVector.clampToZeroIfLengthLessThan(
+            MainGame.THUMBSTICK_DEAD_ZONE
+        );
 
 
-    
-            const leftThumbstickVector = context.getLeftThumbstickVector(
-                 this.player_index
-            );
-            leftThumbstickVector.clampToZeroIfLengthLessThan(
-                MainGame.THUMBSTICK_DEAD_ZONE
-            );
-            const rightThumbstickVector = context.getRightThumbstickVector(
-                 this.player_index
-            );
-            rightThumbstickVector.clampToZeroIfLengthLessThan(
-                MainGame.THUMBSTICK_DEAD_ZONE
-            );
-            
+        if (context.aButtonPressed(this.player_index)) {
+            this.game.physicsEngine.contactConstraints.forEach((contactConstraint: ContactConstraint, contactKeyString: string) => {
+                const contact_info = ContactKey.fromString(contactKeyString);
 
 
-        this.body.applyForce(Vector2D.multiply(leftThumbstickVector, 4));
-        
-        const left_trigger_value = context.cartesianGameContext.gameContext.gamepads[this.player_index]?.axes[4]
-        if (typeof(left_trigger_value) !== "undefined"){
-            this.body.applyTorqe(left_trigger_value*0.01);
-            console.log(left_trigger_value)
-        } 
-        
+                // Check if either of the bodies in the contact is the hat's body
+                if (this.game.physicsEngine.bodies[contact_info.body0] === this.body || this.game.physicsEngine.bodies[contact_info.body1] === this.body) {
+                    this.body.applyTureImpulse(Vector2D.cartesian(0, 2))
+                }
+            });
+        }
 
 
 
+        this.body.applyForce(Vector2D.multiply(leftThumbstickVector, 6));
 
-    
+        if (navigator.platform !== "win32") {
+            const gamepad = context.cartesianGameContext.gameContext.gamepads[this.player_index];
+
+            let leftTriggerValue = this.getNormalizedTriggerValue(gamepad?.axes[4]);
+            if (leftTriggerValue !== undefined) {
+                this.body.applyTorqe(leftTriggerValue * 0.01);
+                this.body.angularVelocity
+
+            }
+
+            let rightTriggerValue = this.getNormalizedTriggerValue(gamepad?.axes[5]);
+            if (rightTriggerValue !== undefined) {
+                this.body.applyTorqe(-rightTriggerValue * 0.01);
+            }
+        }
+    }
+    getNormalizedTriggerValue(triggerValue: any) {
+        if (typeof (triggerValue) === "undefined" || triggerValue === null) {
+            return undefined;
+        }
+        if (triggerValue === 0) {
+            triggerValue = -1;
+        }
+        triggerValue += 1;
+        triggerValue /= 2;
+        return triggerValue;
+    }
+
+    applyDamping(initialValue: number, dampingCoefficient: number, deltaTime: number) {
+        // Calculate the damping factor based on time delta squared
+        const dampingFactor = Math.pow(dampingCoefficient, deltaTime);
+
+        // Apply the damping factor to the initial value
+        return initialValue * dampingFactor;
     }
 }
+
+
+
+
+
+

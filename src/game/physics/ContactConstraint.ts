@@ -232,13 +232,13 @@ class ContactConstraint {
     }
     
     initializeVelocityConstraint(
-        physicsEngine: PhysicsEngine, body0: Body, body1: Body, material: Material
+        physicsEngine: PhysicsEngine, body0: Body, body1: Body, bounciness: number
     ): void {
         const count = this.contactPointImpulses.length;
         this.targetNormalVelocities = new Array(count);
         for (let i = 0; i < count; i++) {
             this.targetNormalVelocities[i] = 
-                -material.bounciness * this.computeNormalVelocity(body0, body1, i);
+                -bounciness * this.computeNormalVelocity(body0, body1, i);
             if (this.targetNormalVelocities[i] < physicsEngine.minimumBounceVelocity) {
                 this.targetNormalVelocities[i] = 0;
             }
@@ -262,7 +262,7 @@ class ContactConstraint {
     }
 
     constrainVelocity(
-        physicsEngine: PhysicsEngine, body0: Body, body1: Body, material: Material
+        physicsEngine: PhysicsEngine, body0: Body, body1: Body, friction: number, tangentSpeed: number
     ): void {
         const count = this.contactPointImpulses.length;
         for (let i = 0; i < count; i++) {
@@ -270,12 +270,10 @@ class ContactConstraint {
             const impulse = this.contactPointImpulses[i];
 
 
-            const friction = 0.14;
-
             const tangentVelocity = this.computeTangentVelocity(body0, body1, i);
             const tangentMass = contactPointManifoldExtension.tangentMass;
             let deltaTangentImpulse = 
-                (material.tangentSpeed - tangentVelocity) * tangentMass;
+                (tangentSpeed - tangentVelocity) * tangentMass;
             const oldTangentImpulse = impulse.tangentImpulse;
             impulse.tangentImpulse += deltaTangentImpulse;
             impulse.tangentImpulse = ContactConstraint.clampMagnitude(

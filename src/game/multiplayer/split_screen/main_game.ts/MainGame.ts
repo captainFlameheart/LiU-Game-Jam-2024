@@ -11,7 +11,7 @@ class MainGame implements SplitScreenGame {
 
     ready: Array<boolean> = Array(MainGame.MAX_PLAYERS);
 
-    inGame: boolean = false;
+    inGame: boolean = true;
 
     constructor() {
         this.physicsEngine = PhysicsEngine.of();
@@ -21,10 +21,10 @@ class MainGame implements SplitScreenGame {
         return new MainGame();
     }
 
-    initialize(context: SplitScreenGameContext): void {
+    initialize(context: SplitScreenGameContext): Promise<void> {
         this.physicsEngine.setDeltaTime(context.getTickDeltaTime());
         
-        const material0 = Material.of(0.0, 0.0, 0.0);
+        const material0 = Material.of(0.0, 0.3, 0.0);
         const localPolygon0 = [
             //Vector2D.cartesian(1, 1), 
             Vector2D.cartesian(-1, 1), 
@@ -40,12 +40,9 @@ class MainGame implements SplitScreenGame {
 
         this.snow.push(Snow.letItSnow(context, 2, 0.1, 3, 0.5))
         this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1))
-        this.snow.push(Snow.letItSnow(context, 1, 0.1, 1, 0.75))
-
-        //const hat1 = new Hat(this)
-        //hat1.initialize(1,1.3,0,0)
-
-
+        //this.snow.push(Snow.letItSnow(context, 1, 0.1, 1, 0.75))        
+        const nGon = new NGon(this);
+        nGon.initialize(5, 0.2, new Vector2D(0, 0)); // Creates an octagon with a radius of 5 at position (10, 10)
 
 
         const body0 = Body.of(this.physicsEngine);
@@ -67,6 +64,8 @@ class MainGame implements SplitScreenGame {
             material0
         ));
         this.physicsEngine.bodies.push(body1);
+
+        return Promise.resolve();
     }
 
     deltaTimeChanged(context: SplitScreenGameContext): void {
@@ -86,7 +85,7 @@ class MainGame implements SplitScreenGame {
         context.getPlayerContext(index).camera.scale = 10;
 
 
-        const newHat = new Hat(this);
+        const newHat = new Hat(this, index);
         newHat.initialize(1, 1.3, 0, 0);  // Parameters can be adjusted as needed
         this.assignHatToPlayer(index, newHat);
     }
@@ -205,7 +204,7 @@ class MainGame implements SplitScreenGame {
             renderer.lineTo(1, 0);
             renderer.moveTo(0, -1);
             renderer.lineTo(0, 1);
-            renderer.stroke();
+            //renderer.stroke();
             renderer.restore();
         });
     }
@@ -284,7 +283,7 @@ class MainGame implements SplitScreenGame {
     renderLobby(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void {
         const renderer = context.getRenderer();
         const oldFillStyle = renderer.fillStyle;
-        renderer.fillStyle = "#ff0000";
+        renderer.fillStyle = "#ffff00";
         renderer.fillRect(
             region.start.x + 1,
             region.start.y + 1, 
@@ -308,6 +307,17 @@ class MainGame implements SplitScreenGame {
             this.renderBodies(context, region, lag);
             this.renderContacts(context, region, lag);
             this.renderSnow(context, region, lag);
+
+            context.playerContexts.forEach((playerContext, playerIndex, map) => {
+                const hat = this.getHatForPlayer(playerIndex);
+
+                if (typeof (hat) === "undefined" || hat === null) {
+                    return undefined;
+                }
+
+                hat.render(context.getRenderer());
+            });
+           
         }
         
         /*const translations = []

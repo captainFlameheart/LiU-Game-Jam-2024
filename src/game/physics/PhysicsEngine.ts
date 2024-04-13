@@ -49,7 +49,7 @@ class PhysicsEngine {
     }
 
     setDeltaTime(deltaTime: number) {
-        this.deltaTime = deltaTime;
+        this.deltaTime = deltaTime;Material
         // TODO: Rescale velocities and accelerations
     }
 
@@ -116,14 +116,26 @@ class PhysicsEngine {
         for (const constraint of this.constraints) {
             constraint.initializeVelocityConstraint(this);
         }
-        this.contactConstraints.forEach((contactConstraint, contactKey) => {
-            const body0 = this.bodies[ContactKey.fromString(contactKey).body0];
-            const body1 = this.bodies[ContactKey.fromString(contactKey).body1];
-            // TODO
-            const material = Material.of(0, 0.6, 0);
+        this.contactConstraints.forEach((contactConstraint, contactKeySting) => {
+            const contactKey = ContactKey.fromString(contactKeySting);
+
+            const body0 = this.bodies[contactKey.body0];
+            const body1 = this.bodies[contactKey.body1];
+
+            const polygon0 = body0.polygons[contactKey.shape0]
+            const polygon1 = body1.polygons[contactKey.shape1]
+
+            const material0 = polygon0.material;
+            const material1 = polygon1.material;
+            
+            
+            const bounciness = Math.max(material0.bounciness, material1.bounciness)
+            
             contactConstraint.initializeVelocityConstraint(
-                this, body0, body1, material
+                this, body0, body1, bounciness
             );
+
+            
         })
 
         for (let i = 0; i < this.velocityIterations; i++) {
@@ -134,10 +146,22 @@ class PhysicsEngine {
                 const contactKey = ContactKey.fromString(contactKeyString);
                 const body0 = this.bodies[contactKey.body0];
                 const body1 = this.bodies[contactKey.body1];
-                // TODO
-                const material = Material.of(0, 0.6, 0);
+
+
+                const polygon0 = body0.polygons[contactKey.shape0]
+                const polygon1 = body1.polygons[contactKey.shape1]
+    
+                const material0 = polygon0.material;
+                const material1 = polygon1.material;
+                
+       
+
+                const friction = Math.sqrt(material0.friction * material1.friction)
+                const tangentSpeed = material0.tangentSpeed + material1.tangentSpeed
+                
+
                 contactConstraint.constrainVelocity(
-                    this, body0, body1, material
+                    this, body0, body1, friction, tangentSpeed
                 );
             })
         }
