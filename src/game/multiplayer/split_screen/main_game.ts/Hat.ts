@@ -1,5 +1,3 @@
-
-
 function isCounterClockwise(points: Vector2D[]): boolean {
     let sum = 0;
     for (let i = 0; i < points.length; i++) {

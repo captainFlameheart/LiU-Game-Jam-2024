@@ -9,11 +9,17 @@ interface Game {
 
     gamepadDisconnected(context: GameContext, index: number): void;
 
+    mouseMoved(context: GameContext, event: MouseEvent): void;
+
     mouseDown(context: GameContext, event: MouseEvent): void;
 
     mouseUp(context: GameContext, event: MouseEvent): void;
 
     mouseWheel(context: GameContext, event: WheelEvent): void;
+
+    keyPressed(context: GameContext, event: KeyboardEvent): void;
+
+    keyReleased(context: GameContext, event: KeyboardEvent): void;
 
     tick(context: GameContext): void;
 

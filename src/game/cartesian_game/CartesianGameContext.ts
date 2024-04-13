@@ -3,18 +3,30 @@ class CartesianGameContext {
 
     gameContext: GameContext;
     halfSize: Vector2D | null;
+    cartesianMousePosition: Vector2D;
 
-    constructor(gameContext: GameContext, halfSize: Vector2D | null) {
+    constructor(
+        gameContext: GameContext, halfSize: Vector2D | null, 
+        cartesianMousePosition: Vector2D
+    ) {
         this.gameContext = gameContext;
         this.halfSize = halfSize;
+        this.cartesianMousePosition = cartesianMousePosition;
     }
 
-    static of(gameContext: GameContext, halfSize: Vector2D | null) {
-        return new CartesianGameContext(gameContext, halfSize);
+    static of(
+        gameContext: GameContext, halfSize: Vector2D | null, 
+        cartesianMousePosition: Vector2D
+    ) {
+        return new CartesianGameContext(
+            gameContext, halfSize, cartesianMousePosition
+        );
     }
 
     static fromGameContext(gameContext: GameContext) {
-        return new CartesianGameContext(gameContext, null);
+        const halfSize = null;
+        const cartesianMousePosition = Vector2D.zero();
+        return new CartesianGameContext(gameContext, null, cartesianMousePosition);
     }
 
     getHalfSize(): Vector2D {

@@ -56,6 +56,9 @@ class SplitScreenGameWrapper implements CartesianGame {
         );
         this.splitScreenGameContext.gamepadDisconnected(index);
     }
+
+    mouseMoved(context: CartesianGameContext, event: MouseEvent): void {
+    }
     
     mouseDown(context: CartesianGameContext, event: MouseEvent): void {
         if (this.splitScreenGameContext === null) {
@@ -84,6 +87,12 @@ class SplitScreenGameWrapper implements CartesianGame {
         }
         this.splitScreenGame.tick(this.splitScreenGameContext);
     }
+
+    keyPressed(context: CartesianGameContext, event: KeyboardEvent): void {
+    }
+
+    keyReleased(context: CartesianGameContext, event: KeyboardEvent): void {
+    }
     
     render(context: CartesianGameContext, lag: number): void {
         if (this.splitScreenGameContext === null) {
@@ -95,16 +104,20 @@ class SplitScreenGameWrapper implements CartesianGame {
         const quadrantSize = context.getHalfSize();
         const aspectRatio = quadrantSize.computeAspectRatio();
         const quadrantHalfSize = Vector2D.halve(quadrantSize);
-        const splitScreenGameRenderable = SplitScreenGameRenderable.of(
-            this.splitScreenGame, this.splitScreenGameContext, lag
-        );
+
         let i = 0;
-        playerContexts.forEach((playerContext) => {
+        playerContexts.forEach((playerContext, playerIndex) => {
             const quadrantPosition = Vector2D.cartesian(
                 (2 * (i % 2) - 1) * quadrantHalfSize.x, 
                 (1 - 2 * Math.trunc(i / 2)) * quadrantHalfSize.y
             );
             const quadrantScale = quadrantHalfSize.y;
+            if (this.splitScreenGameContext === null) {
+                throw new Error(SplitScreenGameWrapper.NO_SPLIT_SCREEN_GAME_CONTEXT_MESSAGE);
+            }
+            const splitScreenGameRenderable = SplitScreenGameRenderable.of(
+                this.splitScreenGame, this.splitScreenGameContext, lag, playerIndex
+            );
             renderRectangularRegion(
                 context.getRenderer(), aspectRatio, 
                 CartesianTransform.of(quadrantPosition, quadrantScale), 

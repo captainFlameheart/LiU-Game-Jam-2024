@@ -17,5 +17,5 @@ interface SplitScreenGame {
     
     tick(context: SplitScreenGameContext): void;
     
-    render(context: SplitScreenGameContext, region: AABB, lag: number): void;
+    render(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void;
 }

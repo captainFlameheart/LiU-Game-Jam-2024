@@ -11,8 +11,10 @@ class CartesianTransform {
         return new CartesianTransform(position, scale);
     }
 
-    localToGlobalRectangle(localRectangle: AABB) {
-
+    localToGlobalPosition(localPosition: Vector2D) {
+        return Vector2D.add(this.position, 
+            Vector2D.multiply(localPosition, this.scale)
+        );
     }
 
     transformAsCamera(renderer: CanvasRenderingContext2D) {

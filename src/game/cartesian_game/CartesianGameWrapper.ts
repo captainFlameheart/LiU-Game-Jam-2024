@@ -20,6 +20,13 @@ class CartesianGameWrapper implements Game {
         this.cartesianGameContext = CartesianGameContext.fromGameContext(context);
         this.cartesianGame.initialize(this.cartesianGameContext);
     }
+
+    requireCartesianGameContext() {
+        if (this.cartesianGameContext === null) {
+            throw new Error(CartesianGameWrapper.NO_CARTESIAN_GAME_CONTEXT_MESSAGE);
+        }
+        return this.cartesianGameContext;
+    }
     
     deltaTimeChanged(context: GameContext): void {
         if (this.cartesianGameContext === null) {
@@ -50,6 +57,17 @@ class CartesianGameWrapper implements Game {
         this.cartesianGame.gamepadDisconnected(this.cartesianGameContext, index);
     }
 
+    mouseMoved(context: GameContext, event: MouseEvent): void {
+        const cartesianGameContext = this.requireCartesianGameContext();
+        cartesianGameContext.cartesianMousePosition = 
+            Vector2D.subtract(
+                context.mousePosition, 
+                cartesianGameContext.getHalfSize()
+            );
+        cartesianGameContext.cartesianMousePosition.y *= -1;
+        this.cartesianGame.mouseMoved(cartesianGameContext, event);
+    }
+
     mouseDown(context: GameContext, event: MouseEvent): void {
         if (this.cartesianGameContext === null) {
             throw new Error(CartesianGameWrapper.NO_CARTESIAN_GAME_CONTEXT_MESSAGE);
@@ -69,6 +87,14 @@ class CartesianGameWrapper implements Game {
             throw new Error(CartesianGameWrapper.NO_CARTESIAN_GAME_CONTEXT_MESSAGE);
         }
         this.cartesianGame.mouseWheel(this.cartesianGameContext, event);
+    }
+
+    keyPressed(context: GameContext, event: KeyboardEvent): void {
+        this.cartesianGame.keyPressed(this.requireCartesianGameContext(), event);
+    }
+
+    keyReleased(context: GameContext, event: KeyboardEvent): void {
+        this.cartesianGame.keyReleased(this.requireCartesianGameContext(), event);
     }
 
     tick(context: GameContext): void {

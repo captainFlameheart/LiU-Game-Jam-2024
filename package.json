@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.html",
   "scripts": {
-    "start": "tsc && xdg-open src/index.html"
+    "start-l": "tsc && xdg-open src/index.html",
+    "start-w": "tsc && npx start src/index.html",
+    "start": "tsc && start src/index.html",
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "typescript": "^5.4.4"
+    "typescript": "^5.4.5"
   },
   "devDependencies": {
     "ts-node": "^10.9.2"
