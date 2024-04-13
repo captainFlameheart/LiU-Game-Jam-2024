@@ -113,14 +113,16 @@ class Hat {
     
         console.log('Rendering hat at:', x, y, 'with adjusted size:', adjustedWidth, adjustedHeight);
     
-        context.beginPath();
-        // Start drawing from half the adjusted width/height back from center to keep it centered
-        context.rect(-adjustedWidth / 2, -adjustedHeight / 2, adjustedWidth, adjustedHeight);
-        context.fillStyle = 'red';
-        context.fill();
-        context.closePath();
+        context.save();
+        const hatScale = 0.002;
+        const yTranslation = -0.2;
+        const yScale = 0.7;
+        context.translate(0, yTranslation);
+        context.scale(hatScale, hatScale * yScale);
+        const hatImage = this.game.requireHatImage();
+        context.drawImage(hatImage, -0.5 * hatImage.width, -0.5 * hatImage.height);
         context.restore();
-
+        context.restore();
     }
 
 

@@ -6,7 +6,8 @@
   "scripts": {
     "startl": "tsc && xdg-open src/index.html",
     "startw": "tsc && npx start src/index.html",
-    "start": "tsc && xdg-open src/index.html",
+    "start": "tsc && xdg-open src/index.html", 
+    "startLarsa": "tsc && start src/index.html", 
     "build": "tsc"
   },
   "author": "",
