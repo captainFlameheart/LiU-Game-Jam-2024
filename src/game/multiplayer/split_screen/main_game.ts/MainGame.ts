@@ -33,7 +33,7 @@ class MainGame implements SplitScreenGame {
     initialize(context: SplitScreenGameContext): void {
         this.physicsEngine.setDeltaTime(context.getTickDeltaTime());
         
-        const material0 = Material.of(0.0, 0.0, 0.0);
+        const material0 = Material.of(0.0, 0.3, 0.0);
         const localPolygon0 = [
             //Vector2D.cartesian(1, 1), 
             Vector2D.cartesian(-1, 1), 
@@ -48,10 +48,9 @@ class MainGame implements SplitScreenGame {
         ];
 
 
+        const nGon = new NGon(this);
+        nGon.initialize(5, 0.2, new Vector2D(0, 0)); // Creates an octagon with a radius of 5 at position (10, 10)
 
-
-        //const hat1 = new Hat(this)
-        //hat1.initialize(1,1.3,0,0)
 
 
 
@@ -94,7 +93,7 @@ class MainGame implements SplitScreenGame {
         context.getPlayerContext(index).camera.scale = 10;
 
 
-        const newHat = new Hat(this);
+        const newHat = new Hat(this, index);
         newHat.initialize(1, 1.3, 0, 0);  // Parameters can be adjusted as needed
         this.assignHatToPlayer(index, newHat);
     }

@@ -45,6 +45,14 @@ class Vector2D {
         return new Vector2D(vector.x * scalar, vector.y * scalar);
     }
 
+    static divide(vector: Vector2D, scalar: number) {
+        return new Vector2D(vector.x / scalar, vector.y / scalar);
+    }
+
+    static fromPolar(angle: number, radius: number): Vector2D {
+        return new Vector2D(radius * Math.cos(angle), radius * Math.sin(angle));
+    }
+    
     static perpendicularCounterClockwise(vector: Vector2D) {
 		return new Vector2D(
 			-vector.y, 
