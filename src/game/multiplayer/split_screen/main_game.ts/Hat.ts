@@ -125,14 +125,16 @@ class Hat {
 
 
 
+
+
     tick(context: SplitScreenGameContext) {
 
         this.body.setTrueAcceleration(Vector2D.cartesian(0, Hat.gravity));
         const deltaTime = context.getTickDeltaTime();
         this.body.angularAcceleration = 0;
 
-        this.body.velocity.x = this.applyDamping(this.body.velocity.x, 0.5, context.getTickDeltaTime());
-        this.body.velocity.y = this.applyDamping(this.body.velocity.y, 0.5, context.getTickDeltaTime());
+        this.body.velocity.x = this.applyDamping(this.body.velocity.x, 0.9, context.getTickDeltaTime());
+        this.body.velocity.y = this.applyDamping(this.body.velocity.y, 0.9, context.getTickDeltaTime());
         this.body.setTrueAngularVelocity(this.applyDamping(this.body.getTrueAngularVelocity(), 0.1, context.getTickDeltaTime()));
 
         const playerContext = context.getPlayerContext(this.player_index);

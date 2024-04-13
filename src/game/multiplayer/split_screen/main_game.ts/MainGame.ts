@@ -13,12 +13,22 @@ class MainGame implements SplitScreenGame {
 
     inGame: boolean = true;
 
+    nGon: NGon|null;
+
     constructor() {
+        this.nGon = null;
         this.physicsEngine = PhysicsEngine.of();
     }
 
     static of() {
         return new MainGame();
+    }
+
+    requireNGon(){
+        if (this.nGon === null){
+            throw new Error("NGon is null");
+        }
+        return this.nGon;
     }
 
     initialize(context: SplitScreenGameContext): Promise<void> {
@@ -40,9 +50,11 @@ class MainGame implements SplitScreenGame {
 
         this.snow.push(Snow.letItSnow(context, 2, 0.1, 3, 0.5))
         this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1))
-        //this.snow.push(Snow.letItSnow(context, 1, 0.1, 1, 0.75))        
-        const nGon = new NGon(this);
-        nGon.initialize(5, 0.2, new Vector2D(0, 0)); // Creates an octagon with a radius of 5 at position (10, 10)
+        //this.snow.push(Snow.letItSnow(context, 1, 0.1, 1, 0.75))    
+        
+        
+        this.nGon = new NGon(this);
+        this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
 
         const body0 = Body.of(this.physicsEngine);
@@ -108,7 +120,32 @@ class MainGame implements SplitScreenGame {
         return this.playerHats.get(playerIndex);
     }
 
+    applyForcesToNGone() {
+
+        const nGon = this.requireNGon(); 
+
+        nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-2));
+
+        let resultantVector = new Vector2D(0, 0);
+        this.playerHats.forEach((hat) => {
+            if (hat && this.nGon) {
+                const vectorToHat = Vector2D.fromPoints(nGon.body.position, hat.body.position);
+                resultantVector.add(vectorToHat);
+            }
+        });
+
+        resultantVector.normalize()
+        console.log(resultantVector)
+        nGon.body.applyForce(Vector2D.multiply(resultantVector,1.5));  // Assuming NGon's body has an applyForce method
+        console.log('Applied force to NGon:', resultantVector);
+    }
+
     tick(context: SplitScreenGameContext): void {
+
+        const nGon = this.requireNGon();
+        nGon.tick(context);  
+        this.applyForcesToNGone();
+
         context.playerContexts.forEach((playerContext, i, map) => {
             this.ready[i] ||= context.aButtonPressed(i);
             this.ready[i] &&= context.bButtonPressed(i);
@@ -165,7 +202,7 @@ class MainGame implements SplitScreenGame {
 
     renderBackground(context: SplitScreenGameContext, region: AABB, lag: number) {
         const renderer = context.getRenderer();
-        renderer.fillStyle = 'green';
+        renderer.fillStyle = 'cyan';
         const start = region.start;
         const size = region.computeSize();
         renderer.fillRect(start.x, start.y, size.x, size.y);

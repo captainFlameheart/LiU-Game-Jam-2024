@@ -62,13 +62,18 @@ class Vector2D {
 		);
 	}
 
+    // Static method to create a vector from one point (from) to another point (to)
+    static fromPoints(from: Vector2D, to: Vector2D): Vector2D {
+        return new Vector2D(to.x - from.x, to.y - from.y);
+            }
+
     static perpendicularClockwise(vector: Vector2D) {
         return new Vector2D(
             vector.y, 
             -vector.x
         );
     }
-
+    
     static rotate(vector: Vector2D, angle: number) {
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
@@ -172,9 +177,14 @@ class Vector2D {
     }
 
     normalize() {
+        
         const length = this.getLength();
+        if (length !== 0){
+
         const scalar = 1 / length;
         this.x *= scalar;
         this.y *= scalar;
+        
+        }
     }
 }
