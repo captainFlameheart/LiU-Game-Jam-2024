@@ -269,6 +269,9 @@ class ContactConstraint {
             const contactPointManifoldExtension = this.contactPointManifoldExtension[i];
             const impulse = this.contactPointImpulses[i];
 
+
+            const friction = 0.14;
+
             const tangentVelocity = this.computeTangentVelocity(body0, body1, i);
             const tangentMass = contactPointManifoldExtension.tangentMass;
             let deltaTangentImpulse = 
@@ -276,7 +279,7 @@ class ContactConstraint {
             const oldTangentImpulse = impulse.tangentImpulse;
             impulse.tangentImpulse += deltaTangentImpulse;
             impulse.tangentImpulse = ContactConstraint.clampMagnitude(
-                impulse.tangentImpulse, material.friction * impulse.normalImpulse
+                impulse.tangentImpulse, friction * impulse.normalImpulse
             );
             deltaTangentImpulse = impulse.tangentImpulse - oldTangentImpulse;
             this.applyTangentImpulse(body0, body1, i, deltaTangentImpulse);

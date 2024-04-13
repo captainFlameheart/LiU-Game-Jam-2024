@@ -1,9 +1,17 @@
 class MainGame implements SplitScreenGame {
     static THUMBSTICK_DEAD_ZONE = 0.1;
+    static MAX_PLAYERS: number = 4;
 
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
+
+    playerHats: Map<number, Hat> = new Map<number, Hat>();
+    snow: Snow[] = [];
+
+    ready: Array<boolean> = Array(MainGame.MAX_PLAYERS);
+
+    inGame: boolean = false;
 
     constructor() {
         this.physicsEngine = PhysicsEngine.of();
@@ -18,16 +26,27 @@ class MainGame implements SplitScreenGame {
         
         const material0 = Material.of(0.0, 0.0, 0.0);
         const localPolygon0 = [
-            Vector2D.cartesian(1, 1), 
+            //Vector2D.cartesian(1, 1), 
             Vector2D.cartesian(-1, 1), 
-            Vector2D.cartesian(-1, -1), 
-            Vector2D.cartesian(1, -1)
+            Vector2D.cartesian(-10, -10), 
+            Vector2D.cartesian(100, -100),
+            Vector2D.cartesian(2, -1)
         ];
         const localPolygon1 = [
             Vector2D.cartesian(1, 1), 
             Vector2D.cartesian(-1, 1), 
             Vector2D.cartesian(-1, -1), 
         ];
+
+        this.snow.push(Snow.letItSnow(context, 2, 0.1, 3, 0.5))
+        this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1))
+        this.snow.push(Snow.letItSnow(context, 1, 0.1, 1, 0.75))
+
+        //const hat1 = new Hat(this)
+        //hat1.initialize(1,1.3,0,0)
+
+
+
 
         const body0 = Body.of(this.physicsEngine);
         body0.position.set(Vector2D.cartesian(0.01, 5));
@@ -38,7 +57,7 @@ class MainGame implements SplitScreenGame {
             TransformedConvexPolygon.of(localPolygon1), 
             material0
         ));
-        this.physicsEngine.bodies.push(body0);
+        //this.physicsEngine.bodies.push(body0);
 
         const body1 = Body.of(this.physicsEngine);
         body1.lightness = 0.0;
@@ -57,9 +76,19 @@ class MainGame implements SplitScreenGame {
     canvasResized(context: SplitScreenGameContext): void {
     }
 
+
+    assignHatToPlayer(playerIndex: number, hat: Hat) {
+        this.playerHats.set(playerIndex, hat);
+    }
+
     playerConnected(context: SplitScreenGameContext, index: number): void {
         console.log(`Player ${index} connected!`);
         context.getPlayerContext(index).camera.scale = 10;
+
+
+        const newHat = new Hat(this);
+        newHat.initialize(1, 1.3, 0, 0);  // Parameters can be adjusted as needed
+        this.assignHatToPlayer(index, newHat);
     }
 
     playerDisconnected(context: SplitScreenGameContext, index: number): void {
@@ -73,9 +102,19 @@ class MainGame implements SplitScreenGame {
     }
 
     mouseWheel(context: SplitScreenGameContext, event: WheelEvent): void {
+    
+    }
+
+    getHatForPlayer(playerIndex: number): Hat | undefined {
+        return this.playerHats.get(playerIndex);
     }
 
     tick(context: SplitScreenGameContext): void {
+        context.playerContexts.forEach((playerContext, i, map) => {
+            this.ready[i] ||= context.aButtonPressed(i);
+            this.ready[i] &&= context.bButtonPressed(i);
+        });
+
         const currentTime = Date.now();
         if (currentTime - this.frameRateMeasurementStartTime >= 1000) {
             console.log(`fps: this.count`);
@@ -87,7 +126,14 @@ class MainGame implements SplitScreenGame {
 
         this.physicsEngine.tick();
 
+        this.snow.forEach(snow => {
+            snow.tick()
+        })
+
         const deltaTime = context.getTickDeltaTime();
+
+
+
         context.playerContexts.forEach((playerContext, playerIndex) => {
             const leftThumbstickVector = context.getLeftThumbstickVector(
                 playerIndex
@@ -104,6 +150,14 @@ class MainGame implements SplitScreenGame {
             rightThumbstickVector.clampToZeroIfLengthLessThan(
                 MainGame.THUMBSTICK_DEAD_ZONE
             );
+
+            const hat = this.getHatForPlayer(playerIndex);
+            if (hat) {
+                hat.tick(context); 
+                playerContext.camera.position.x = hat.body.position.x;
+                playerContext.camera.position.y = hat.body.position.y;
+            }
+
             playerContext.camera.scale *= Math.pow(
                 10, -rightThumbstickVector.y * deltaTime
             );
@@ -167,6 +221,20 @@ class MainGame implements SplitScreenGame {
     renderBodies(context: SplitScreenGameContext, region: AABB, lag: number): void {
         const renderer = context.getRenderer();
         for (const body of this.physicsEngine.bodies) {
+            renderer.save();
+            renderer.translate(body.position.x, body.position.y)
+            renderer.rotate(body.angle)
+            renderer.scale(0.1, 0.1)
+            renderer.beginPath();
+            renderer.moveTo(-1.0, 0);
+            renderer.lineTo(1, 0);
+            renderer.moveTo(0,-1.0);
+            renderer.lineTo(0, 1);
+            renderer.strokeStyle = 'black';
+            renderer.lineWidth = 0.1;
+            renderer.stroke();
+            renderer.restore();
+
             for (const polygon of body.polygons) {
                 const vertices = polygon.convexPolygon.globalPolygon.vertices;
                 renderer.beginPath();
@@ -206,14 +274,42 @@ class MainGame implements SplitScreenGame {
             }
         });
     }
-    
-    render(context: SplitScreenGameContext, region: AABB, lag: number): void {
-        this.renderBackground(context, region, lag);
-        this.renderHouse(context, region, lag);
-        this.renderCameras(context, region, lag);
-        this.renderBodies(context, region, lag);
-        this.renderContacts(context, region, lag);
 
+    renderSnow(context: SplitScreenGameContext, region: AABB, lag: number) {
+        this.snow.forEach(snow => {
+            snow.render(context, region, lag);
+        })
+    }
+
+    renderLobby(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void {
+        const renderer = context.getRenderer();
+        const oldFillStyle = renderer.fillStyle;
+        renderer.fillStyle = "#ff0000";
+        renderer.fillRect(
+            region.start.x + 1,
+            region.start.y + 1, 
+            region.end.x - region.start.x - 1,
+            region.end.y - region.start.y - 1
+        );
+        renderer.fillStyle = oldFillStyle;
+    }
+
+    
+    render(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void {
+        if(!this.inGame) {
+            context.playerContexts.forEach((playerContext, playerIndex, map) => {
+                this.renderLobby(context, region, lag, playerIndex);
+            });
+        }
+        else {
+            this.renderBackground(context, region, lag);
+            this.renderHouse(context, region, lag);
+            this.renderCameras(context, region, lag);
+            this.renderBodies(context, region, lag);
+            this.renderContacts(context, region, lag);
+            this.renderSnow(context, region, lag);
+        }
+        
         /*const translations = []
         for (let i = 0; i < this.localPolygons.length; i++) {
             translations.push(Vector2D.zero());
@@ -267,4 +363,4 @@ class MainGame implements SplitScreenGame {
             }
         }*/
     }
-}
+};

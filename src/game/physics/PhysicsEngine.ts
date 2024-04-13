@@ -35,7 +35,7 @@ class PhysicsEngine {
         const velocityIterations = 8;
         const positionIterations = 2;
         const warmStarting = 1;
-        const penetrationTolerance = 0.02;
+        const penetrationTolerance = 0.03;
         const minimumBounceVelocity = 0.1;
         const deltaTime = 1;
         const bodies: Body[] = [];
