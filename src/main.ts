@@ -1,7 +1,10 @@
 function main() {
-    const game = CartesianGameWrapper.of(SplitScreenGameWrapper.of(
+    /*const game = CartesianGameWrapper.of(SplitScreenGameWrapper.of(
         MainGame.of()
+    ));*/
+    const game = CartesianGameWrapper.of(EditorWrapper.of(
+       LevelEditor.empty(), 
     ));
-    const fps = 240;
+    const fps = 60;
     startGameLoop(game, fps);
 }

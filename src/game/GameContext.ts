@@ -1,20 +1,23 @@
 class GameContext {
     renderer: CanvasRenderingContext2D;
     tickDeltaTime: number;
-    gamepads: (Gamepad | null)[]
+    gamepads: (Gamepad | null)[];
+    mousePosition: Vector2D;
 
     constructor(
         renderer: CanvasRenderingContext2D, tickDeltaTime: number, 
-        gamepads: (Gamepad | null)[]
+        gamepads: (Gamepad | null)[], mousePosition: Vector2D
     ) {
         this.renderer = renderer;
         this.tickDeltaTime = tickDeltaTime;
         this.gamepads = gamepads;
+        this.mousePosition = mousePosition;
     }
 
     static of(renderer: CanvasRenderingContext2D, tickDeltaTime: number) {
         const gamepads: (Gamepad | null)[] = [];
-        return new GameContext(renderer, tickDeltaTime, gamepads);
+        const mousePosition = Vector2D.zero();
+        return new GameContext(renderer, tickDeltaTime, gamepads, mousePosition);
     }
 
     getRenderer() {

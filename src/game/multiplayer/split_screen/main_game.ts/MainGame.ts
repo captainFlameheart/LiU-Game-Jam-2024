@@ -1,26 +1,12 @@
 class MainGame implements SplitScreenGame {
     static THUMBSTICK_DEAD_ZONE = 0.1;
 
-    //localPolygons: ConvexPolygon[];
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
 
     constructor() {
         this.physicsEngine = PhysicsEngine.of();
-        /*this.localPolygons = [];
-        this.localPolygons.push(ConvexPolygon.of([
-            Vector2D.cartesian(1, 1), 
-            Vector2D.cartesian(-1, 1), 
-            Vector2D.cartesian(-1, -1), 
-            Vector2D.cartesian(1, -1)
-        ]));
-
-        this.localPolygons.push(ConvexPolygon.of([
-            Vector2D.cartesian(1, 1), 
-            Vector2D.cartesian(-1, 1), 
-            Vector2D.cartesian(-1, -1)
-        ]));*/
     }
 
     static of() {

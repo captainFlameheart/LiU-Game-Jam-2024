@@ -56,6 +56,9 @@ class SplitScreenGameWrapper implements CartesianGame {
         );
         this.splitScreenGameContext.gamepadDisconnected(index);
     }
+
+    mouseMoved(context: CartesianGameContext, event: MouseEvent): void {
+    }
     
     mouseDown(context: CartesianGameContext, event: MouseEvent): void {
         if (this.splitScreenGameContext === null) {
@@ -83,6 +86,12 @@ class SplitScreenGameWrapper implements CartesianGame {
             throw new Error(SplitScreenGameWrapper.NO_SPLIT_SCREEN_GAME_CONTEXT_MESSAGE);
         }
         this.splitScreenGame.tick(this.splitScreenGameContext);
+    }
+
+    keyPressed(context: CartesianGameContext, event: KeyboardEvent): void {
+    }
+
+    keyReleased(context: CartesianGameContext, event: KeyboardEvent): void {
     }
     
     render(context: CartesianGameContext, lag: number): void {

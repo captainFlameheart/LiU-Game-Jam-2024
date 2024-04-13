@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.html",
   "scripts": {
-    "start": "tsc && start src/index.html"
+    "start": "tsc && start src/index.html", 
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
