@@ -68,47 +68,48 @@ function startGameLoop(game: Game, fps: number) {
         throw new Error('Failed to get renderer');
     }
     
-    game.initialize(gameContext);
-    game.deltaTimeChanged(gameContext);
-    checkCanvasSize(game, canvas, gameContext);
-
-    window.onmousemove = (event) => {
-        gameContext.mousePosition.set(
-            Vector2D.cartesian(event.offsetX, event.offsetY)
-        );
-        game.mouseMoved(gameContext, event);
-    }
-
-    window.onmousedown = (event) => {
-        game.mouseDown(gameContext, event);
-    }
-
-    window.onmouseup = (event) => {
-        game.mouseUp(gameContext, event);
-    };
-
-    window.onwheel = (event) => {
-        game.mouseWheel(gameContext, event);
-    };
-
-    window.onkeydown = (event) => {
-        game.keyPressed(gameContext, event);
-    }
-
-    window.onkeyup = (event) => {
-        game.keyReleased(gameContext, event);
-    }
-
-    window.oncontextmenu = (event) => {
-        event.preventDefault();
-    }
-
-    const lag = 0.0;
-    game.render(gameContext, lag);
-    const processedMilliseconds = 0.0;
-    requestAnimationFrame((currentMillisecond) => step(
-        game, canvas, renderer, gameContext, 
-        tickDeltaTimeSeconds, tickDeltaTimeMilliseconds, 
-        processedMilliseconds, currentMillisecond
-    ));
+    game.initialize(gameContext).then(() => {
+        game.deltaTimeChanged(gameContext);
+        checkCanvasSize(game, canvas, gameContext);
+    
+        window.onmousemove = (event) => {
+            gameContext.mousePosition.set(
+                Vector2D.cartesian(event.offsetX, event.offsetY)
+            );
+            game.mouseMoved(gameContext, event);
+        }
+    
+        window.onmousedown = (event) => {
+            game.mouseDown(gameContext, event);
+        }
+    
+        window.onmouseup = (event) => {
+            game.mouseUp(gameContext, event);
+        };
+    
+        window.onwheel = (event) => {
+            game.mouseWheel(gameContext, event);
+        };
+    
+        window.onkeydown = (event) => {
+            game.keyPressed(gameContext, event);
+        }
+    
+        window.onkeyup = (event) => {
+            game.keyReleased(gameContext, event);
+        }
+    
+        window.oncontextmenu = (event) => {
+            event.preventDefault();
+        }
+    
+        const lag = 0.0;
+        game.render(gameContext, lag);
+        const processedMilliseconds = 0.0;
+        requestAnimationFrame((currentMillisecond) => step(
+            game, canvas, renderer, gameContext, 
+            tickDeltaTimeSeconds, tickDeltaTimeMilliseconds, 
+            processedMilliseconds, currentMillisecond
+        ));
+    });
 }
