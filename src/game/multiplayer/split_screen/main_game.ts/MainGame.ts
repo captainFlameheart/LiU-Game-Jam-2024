@@ -1,5 +1,3 @@
-import { REFUSED } from "dns";
-
 class MainGame implements SplitScreenGame {
     static THUMBSTICK_DEAD_ZONE = 0.1;
     static MAX_PLAYERS: number = 4;
@@ -56,6 +54,7 @@ class MainGame implements SplitScreenGame {
 
         this.snow.push(Snow.letItSnow(context, 2, 0.1, 3, 0.5))
         this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1))
+        this.snow.push(Snow.letItSnow(context, 1, 0.1, 1, 0.75))
 
         //const hat1 = new Hat(this)
         //hat1.initialize(1,1.3,0,0)
