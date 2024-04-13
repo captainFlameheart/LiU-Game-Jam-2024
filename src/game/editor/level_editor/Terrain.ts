@@ -29,6 +29,38 @@ class Terrain {
         }
     }
 
+    toArrays() {
+        let res: [number, number][][] = [];
+        let searched = new Set();
+
+        for (let index = 0; index < this.vertices.length; index++) {
+            if (searched.has(index)) continue;
+            searched.add(index);
+
+            let start = this.vertices[index];
+            res.push([[start.position.getX(), start.position.getY()]]);
+
+            let current = start;
+            while (current.previous !== null && !searched.has(current.previous)) {
+                searched.add(current.previous);
+                current = this.vertices[current.previous];
+                console.log(res.at(-1))
+                res.at(-1)?.splice(0, 0, [current.position.getX(), current.position.getY()]);
+                console.log(current.previous);
+            }
+
+            current = start;
+            while (current.next !== null && !searched.has(current.next)) {
+                searched.add(current.next);
+                current = this.vertices[current.next];
+                res.at(-1)?.push([current.position.getX(), current.position.getY()]);
+            }
+        }
+
+        return res;
+
+    }
+
     log() {
         for (let i = 0; i < this.vertices.length; i++) {
             console.log(`${i}->${this.vertices[i].next}`);

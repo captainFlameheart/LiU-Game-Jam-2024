@@ -124,11 +124,18 @@ class LevelEditor implements Editor {
             case 'Escape':
                 this.currentEndVertex = null;
                 break;
+            case 's':
+                this.save();
+                break;
         }
     }
 
     keyReleased(context: EditorContext, event: KeyboardEvent): void {
         console.log('key released!');
+    }
+
+    save(): void {
+        navigator.clipboard.writeText(JSON.stringify(this.terrain.toArrays()));
     }
 
     tick(context: EditorContext): void {
