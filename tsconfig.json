@@ -8,7 +8,7 @@
       "strict": true,
       "forceConsistentCasingInFileNames": true,
       "noFallthroughCasesInSwitch": true,
-      "module": "commonjs",
+      "module": "CommonJS",
       "outDir": "dist",
       "rootDir": "src"
     },
