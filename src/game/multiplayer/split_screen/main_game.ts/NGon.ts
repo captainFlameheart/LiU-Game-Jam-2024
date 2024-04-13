@@ -6,7 +6,7 @@ class NGon {
     }
 
     initialize(n: number, radius: number, position: Vector2D) {
-        const material0 = Material.of(0.0, 1, 0.0);  // Assuming Material.of creates a material object
+        const material0 = Material.of(0.0, 0.5, 0.0);  // Assuming Material.of creates a material object
         const vertices = this.generateNGonVertices(n, radius, position);
         this.body = this.createBody(vertices, position, material0);
         this.game.physicsEngine.bodies.push(this.body);
