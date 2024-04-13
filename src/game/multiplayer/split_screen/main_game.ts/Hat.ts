@@ -84,7 +84,7 @@ class Hat {
         // Verify each polygon's order and correct if necessary
         polygons.forEach((polygon, index) => {
             if (!isCounterClockwise(polygon)) {
-                console.log(`Correcting polygon at index ${index} to counterclockwise order.`);
+                // console.log(`Correcting polygon at index ${index} to counterclockwise order.`);
                 polygon = reversePoints(polygon);
             }
             hat_bottom.polygons.push(PhysicalPolygon.of(TransformedConvexPolygon.of(polygon), material0));
@@ -111,7 +111,7 @@ class Hat {
         context.translate(x, y);
         context.rotate(this.body.angle);
     
-        console.log('Rendering hat at:', x, y, 'with adjusted size:', adjustedWidth, adjustedHeight);
+        // console.log('Rendering hat at:', x, y, 'with adjusted size:', adjustedWidth, adjustedHeight);
     
         context.beginPath();
         // Start drawing from half the adjusted width/height back from center to keep it centered
@@ -136,7 +136,7 @@ class Hat {
         this.body.setTrueAngularVelocity(this.applyDamping(this.body.getTrueAngularVelocity(), 0.1, context.getTickDeltaTime()));
 
         const playerContext = context.getPlayerContext(this.player_index);
-        console.log(this.player_index)
+        // console.log(this.player_index)
 
         const leftThumbstickVector = context.getLeftThumbstickVector(
             this.player_index
@@ -167,18 +167,26 @@ class Hat {
 
 
         this.body.applyForce(Vector2D.multiply(leftThumbstickVector, 6));
+        const gamepad = context.cartesianGameContext.gameContext.gamepads[this.player_index];
 
-        if (navigator.platform !== "win32") {
-            const gamepad = context.cartesianGameContext.gameContext.gamepads[this.player_index];
-
+        if (navigator.platform !== "Win32") {
             let leftTriggerValue = this.getNormalizedTriggerValue(gamepad?.axes[4]);
             if (leftTriggerValue !== undefined) {
                 this.body.applyTorqe(leftTriggerValue * 0.01);
-                this.body.angularVelocity
-
             }
 
             let rightTriggerValue = this.getNormalizedTriggerValue(gamepad?.axes[5]);
+            if (rightTriggerValue !== undefined) {
+                this.body.applyTorqe(-rightTriggerValue * 0.01);
+            }
+        } else {
+            // console.log(context.getLeftTriggerState(this.player_index));
+            let leftTriggerValue = context.getLeftTriggerState(this.player_index).value;
+            if (leftTriggerValue !== undefined) {
+                this.body.applyTorqe(leftTriggerValue * 0.01);
+            }
+
+            let rightTriggerValue = context.getRightTriggerState(this.player_index).value;
             if (rightTriggerValue !== undefined) {
                 this.body.applyTorqe(-rightTriggerValue * 0.01);
             }
