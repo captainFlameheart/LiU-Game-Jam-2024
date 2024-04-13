@@ -21,7 +21,7 @@ class MainGame implements SplitScreenGame {
         return new MainGame();
     }
 
-    initialize(context: SplitScreenGameContext): void {
+    initialize(context: SplitScreenGameContext): Promise<void> {
         this.physicsEngine.setDeltaTime(context.getTickDeltaTime());
         
         const material0 = Material.of(0.0, 0.3, 0.0);
@@ -64,6 +64,8 @@ class MainGame implements SplitScreenGame {
             material0
         ));
         this.physicsEngine.bodies.push(body1);
+
+        return Promise.resolve();
     }
 
     deltaTimeChanged(context: SplitScreenGameContext): void {

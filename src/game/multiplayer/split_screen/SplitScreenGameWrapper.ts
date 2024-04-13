@@ -17,10 +17,11 @@ class SplitScreenGameWrapper implements CartesianGame {
         return new SplitScreenGameWrapper(splitScreenGame, null);
     }
     
-    initialize(context: CartesianGameContext): void {
+    initialize(context: CartesianGameContext): Promise<void> {
         this.splitScreenGameContext = 
             SplitScreenGameContext.of(context);
         this.splitScreenGame.initialize(this.splitScreenGameContext);
+        return Promise.resolve();
     }
 
     deltaTimeChanged(context: CartesianGameContext): void {

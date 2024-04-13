@@ -19,7 +19,7 @@ class EditorWrapper implements CartesianGame {
             editor, editorContext, cameraMouseController);
     }
 
-    initialize(context: CartesianGameContext): void {
+    initialize(context: CartesianGameContext): Promise<void> {
         const camera = CartesianTransform.of(Vector2D.zero(), 1);
         const worldMousePosition = Vector2D.zero();
         this.editorContext = EditorContext.of(
@@ -27,6 +27,7 @@ class EditorWrapper implements CartesianGame {
         );
         this.cameraMouseController = CameraMouseController.of(camera);
         this.editor.initialize(this.editorContext);
+        return Promise.resolve();
     }
 
     requireEditorContext() {

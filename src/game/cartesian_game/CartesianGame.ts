@@ -1,5 +1,5 @@
 interface CartesianGame {
-    initialize(context: CartesianGameContext): void;
+    initialize(context: CartesianGameContext): Promise<void>;
     
     deltaTimeChanged(context: CartesianGameContext): void;
 

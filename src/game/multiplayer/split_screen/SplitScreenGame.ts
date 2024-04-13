@@ -1,5 +1,5 @@
 interface SplitScreenGame {
-    initialize(context: SplitScreenGameContext): void;
+    initialize(context: SplitScreenGameContext): Promise<void>;
 
     deltaTimeChanged(context: SplitScreenGameContext): void;    
     
