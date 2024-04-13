@@ -1,5 +1,8 @@
+import { REFUSED } from "dns";
+
 class MainGame implements SplitScreenGame {
     static THUMBSTICK_DEAD_ZONE = 0.1;
+    static MAX_PLAYERS: number = 4;
 
     //localPolygons: ConvexPolygon[];
     physicsEngine: PhysicsEngine;
@@ -7,7 +10,14 @@ class MainGame implements SplitScreenGame {
     frameRateMeasurmentCounter: number = 0;
 
     playerHats: Map<number, Hat> = new Map<number, Hat>();
+<<<<<<< HEAD
     snow: Snow[] = [];
+=======
+
+    ready: Array<boolean> = Array(MainGame.MAX_PLAYERS);
+
+    inGame: boolean = false;
+>>>>>>> 540c00f28191b91595d62e034ffda2a7163d4284
 
     constructor() {
         this.physicsEngine = PhysicsEngine.of();
@@ -118,6 +128,10 @@ class MainGame implements SplitScreenGame {
     }
 
     tick(context: SplitScreenGameContext): void {
+        context.playerContexts.forEach((playerContext, i, map) => {
+            this.ready[i] ||= context.aButtonPressed(i);
+            this.ready[i] &&= context.bButtonPressed(i);
+        });
 
         const currentTime = Date.now();
         if (currentTime - this.frameRateMeasurementStartTime >= 1000) {
@@ -284,16 +298,36 @@ class MainGame implements SplitScreenGame {
             snow.render(context, region, lag);
         })
     }
-    
-    render(context: SplitScreenGameContext, region: AABB, lag: number): void {
-        this.renderBackground(context, region, lag);
-        this.renderHouse(context, region, lag);
-        this.renderCameras(context, region, lag);
-        this.renderBodies(context, region, lag);
-        this.renderContacts(context, region, lag);
-        this.renderSnow(context, region, lag);
-        
 
+    renderLobby(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void {
+        const renderer = context.getRenderer();
+        const oldFillStyle = renderer.fillStyle;
+        renderer.fillStyle = "#ff0000";
+        renderer.fillRect(
+            region.start.x + 1,
+            region.start.y + 1, 
+            region.end.x - region.start.x - 1,
+            region.end.y - region.start.y - 1
+        );
+        renderer.fillStyle = oldFillStyle;
+    }
+
+    
+    render(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void {
+        if(!this.inGame) {
+            context.playerContexts.forEach((playerContext, playerIndex, map) => {
+                this.renderLobby(context, region, lag, playerIndex);
+            });
+        }
+        else {
+            this.renderBackground(context, region, lag);
+            this.renderHouse(context, region, lag);
+            this.renderCameras(context, region, lag);
+            this.renderBodies(context, region, lag);
+            this.renderContacts(context, region, lag);
+            this.renderSnow(context, region, lag);
+        }
+        
         /*const translations = []
         for (let i = 0; i < this.localPolygons.length; i++) {
             translations.push(Vector2D.zero());
@@ -347,4 +381,4 @@ class MainGame implements SplitScreenGame {
             }
         }*/
     }
-}
+};
