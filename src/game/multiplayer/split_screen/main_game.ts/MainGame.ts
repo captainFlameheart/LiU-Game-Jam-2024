@@ -35,13 +35,17 @@ class MainGame implements SplitScreenGame {
             Vector2D.cartesian(1, 1), 
             Vector2D.cartesian(-1, 1), 
             Vector2D.cartesian(-1, -1), 
-            Vector2D.cartesian(1, -1)
+            Vector2D.cartesian(1, -1),
+            Vector2D.cartesian(2, -1)
         ];
         const localPolygon1 = [
             Vector2D.cartesian(1, 1), 
             Vector2D.cartesian(-1, 1), 
             Vector2D.cartesian(-1, -1), 
         ];
+
+        const hat1 = new Hat(this)
+        hat1.initialize(10,10)
 
         const body0 = Body.of(this.physicsEngine);
         body0.position.set(Vector2D.cartesian(0.01, 5));
@@ -118,6 +122,7 @@ class MainGame implements SplitScreenGame {
             rightThumbstickVector.clampToZeroIfLengthLessThan(
                 MainGame.THUMBSTICK_DEAD_ZONE
             );
+
             playerContext.camera.scale *= Math.pow(
                 10, -rightThumbstickVector.y * deltaTime
             );
@@ -227,6 +232,7 @@ class MainGame implements SplitScreenGame {
         this.renderCameras(context, region, lag);
         this.renderBodies(context, region, lag);
         this.renderContacts(context, region, lag);
+        
 
         /*const translations = []
         for (let i = 0; i < this.localPolygons.length; i++) {
