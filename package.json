@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.html",
   "scripts": {
-    "start": "tsc && xdg-open src/index.html"
+    "start-l": "tsc && xdg-open src/index.html",
+    "start-w": "tsc && npx start src/index.html"
   },
   "author": "",
   "license": "ISC",

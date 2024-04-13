@@ -6,8 +6,8 @@ class MainGame implements SplitScreenGame {
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
 
-   playerHats: Map<number, Hat> = new Map<number, Hat>();
-
+    playerHats: Map<number, Hat> = new Map<number, Hat>();
+    snow: Snow[] = [];
 
     constructor() {
         this.physicsEngine = PhysicsEngine.of();
@@ -47,8 +47,8 @@ class MainGame implements SplitScreenGame {
             Vector2D.cartesian(-1, -1), 
         ];
 
-
-
+        this.snow.push(Snow.letItSnow(context, 2, 0.1, 3, 0.5))
+        this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1))
 
         //const hat1 = new Hat(this)
         //hat1.initialize(1,1.3,0,0)
@@ -130,7 +130,14 @@ class MainGame implements SplitScreenGame {
 
         this.physicsEngine.tick();
 
+        this.snow.forEach(snow => {
+            snow.tick()
+        })
+
         const deltaTime = context.getTickDeltaTime();
+
+
+
         context.playerContexts.forEach((playerContext, playerIndex) => {
             const leftThumbstickVector = context.getLeftThumbstickVector(
                 playerIndex
@@ -271,6 +278,12 @@ class MainGame implements SplitScreenGame {
             }
         });
     }
+
+    renderSnow(context: SplitScreenGameContext, region: AABB, lag: number) {
+        this.snow.forEach(snow => {
+            snow.render(context, region, lag);
+        })
+    }
     
     render(context: SplitScreenGameContext, region: AABB, lag: number): void {
         this.renderBackground(context, region, lag);
@@ -278,6 +291,7 @@ class MainGame implements SplitScreenGame {
         this.renderCameras(context, region, lag);
         this.renderBodies(context, region, lag);
         this.renderContacts(context, region, lag);
+        this.renderSnow(context, region, lag);
         
 
         /*const translations = []
