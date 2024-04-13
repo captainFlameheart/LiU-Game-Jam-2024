@@ -2,6 +2,8 @@ class MainGame implements SplitScreenGame {
     static THUMBSTICK_DEAD_ZONE = 0.1;
     static MAX_PLAYERS: number = 4;
 
+    hatImage: ImageBitmap | null;
+
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
@@ -9,20 +11,36 @@ class MainGame implements SplitScreenGame {
     playerHats: Map<number, Hat> = new Map<number, Hat>();
     snow: Snow[] = [];
 
+    goat: Goat;
+
     ready: Array<boolean> = Array(MainGame.MAX_PLAYERS);
 
     inGame: boolean = true;
 
     nGon: NGon|null;
 
-    constructor() {
+    constructor(
+        physicsEngine: PhysicsEngine, hatImage: ImageBitmap | null, 
+        goat: Goat
+    ) {
         this.nGon = null;
-        this.physicsEngine = PhysicsEngine.of();
+        this.physicsEngine = physicsEngine;
+        this.hatImage = hatImage;
+        this.goat = goat;
     }
 
     static of() {
-        return new MainGame();
+        const hatImage = null;
+        const goat = Goat.of();
+        return new MainGame(PhysicsEngine.of(), hatImage, goat);
     }
+
+    loadAssets(context: SplitScreenGameContext): Promise<void> {
+        return loadImage('../images/hat.png').then(hatImage => {
+            this.hatImage = hatImage;
+        });
+    }
+
 
     requireNGon(){
         if (this.nGon === null){
@@ -32,21 +50,24 @@ class MainGame implements SplitScreenGame {
     }
 
     initialize(context: SplitScreenGameContext): Promise<void> {
-        this.physicsEngine.setDeltaTime(context.getTickDeltaTime());
-        
-        const material0 = Material.of(0.0, 0.3, 0.0);
-        const localPolygon0 = [
-            //Vector2D.cartesian(1, 1), 
-            Vector2D.cartesian(-1, 1), 
-            Vector2D.cartesian(-10, -10), 
-            Vector2D.cartesian(100, -100),
-            Vector2D.cartesian(2, -1)
-        ];
-        const localPolygon1 = [
-            Vector2D.cartesian(1, 1), 
-            Vector2D.cartesian(-1, 1), 
-            Vector2D.cartesian(-1, -1), 
-        ];
+        return this.loadAssets(context).then(
+            () => this.goat.initialize(this, context)
+        ).then(() => {
+            this.physicsEngine.setDeltaTime(context.getTickDeltaTime());
+            
+            const material0 = Material.of(0.0, 0.3, 0.0);
+            const localPolygon0 = [
+                //Vector2D.cartesian(1, 1), 
+                Vector2D.cartesian(-1, 1), 
+                Vector2D.cartesian(-10, -10), 
+                Vector2D.cartesian(100, -100),
+                Vector2D.cartesian(2, -1)
+            ];
+            const localPolygon1 = [
+                Vector2D.cartesian(1, 1), 
+                Vector2D.cartesian(-1, 1), 
+                Vector2D.cartesian(-1, -1), 
+            ];
 
         this.snow.push(Snow.letItSnow(context, 2, 0.1, 3, 0.5))
         this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1))
@@ -57,27 +78,33 @@ class MainGame implements SplitScreenGame {
         this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
 
-        const body0 = Body.of(this.physicsEngine);
-        body0.position.set(Vector2D.cartesian(0.01, 5));
-        body0.setTrueVelocity(Vector2D.cartesian(0, 0));
-        body0.setTrueAcceleration(Vector2D.cartesian(0, -9.81));
-        body0.angularLightness = 0.4;
-        body0.polygons.push(PhysicalPolygon.of(
-            TransformedConvexPolygon.of(localPolygon1), 
-            material0
-        ));
-        //this.physicsEngine.bodies.push(body0);
+            const body0 = Body.of(this.physicsEngine);
+            body0.position.set(Vector2D.cartesian(0.01, 5));
+            body0.setTrueVelocity(Vector2D.cartesian(0, 0));
+            body0.setTrueAcceleration(Vector2D.cartesian(0, -9.81));
+            body0.angularLightness = 0.4;
+            body0.polygons.push(PhysicalPolygon.of(
+                TransformedConvexPolygon.of(localPolygon1), 
+                material0
+            ));
+            //this.physicsEngine.bodies.push(body0);
 
-        const body1 = Body.of(this.physicsEngine);
-        body1.lightness = 0.0;
-        body1.angularLightness = 0.0;
-        body1.polygons.push(PhysicalPolygon.of(
-            TransformedConvexPolygon.of(localPolygon0), 
-            material0
-        ));
-        this.physicsEngine.bodies.push(body1);
+            const body1 = Body.of(this.physicsEngine);
+            body1.lightness = 0.0;
+            body1.angularLightness = 0.0;
+            body1.polygons.push(PhysicalPolygon.of(
+                TransformedConvexPolygon.of(localPolygon0), 
+                material0
+            ));
+            this.physicsEngine.bodies.push(body1);
+        });
+    }
 
-        return Promise.resolve();
+    requireHatImage() {
+        if (this.hatImage === null) {
+            throw new Error('Hat image is null');
+        }
+        return this.hatImage;
     }
 
     deltaTimeChanged(context: SplitScreenGameContext): void {
@@ -344,6 +371,7 @@ class MainGame implements SplitScreenGame {
             this.renderBodies(context, region, lag);
             this.renderContacts(context, region, lag);
             this.renderSnow(context, region, lag);
+            this.goat.render(context, region, lag, playerIndex);
 
             context.playerContexts.forEach((playerContext, playerIndex, map) => {
                 const hat = this.getHatForPlayer(playerIndex);
@@ -354,60 +382,6 @@ class MainGame implements SplitScreenGame {
 
                 hat.render(context.getRenderer());
             });
-           
         }
-        
-        /*const translations = []
-        for (let i = 0; i < this.localPolygons.length; i++) {
-            translations.push(Vector2D.zero());
-        }
-        context.playerContexts.forEach((playerContext, playerIndex) => {
-            if (playerIndex < translations.length) {
-                translations[playerIndex] = playerContext.camera.position;
-            }
-        });
-        const globalPolygons = [];
-        for (let i = 0; i < this.localPolygons.length; i++) {
-            const localPolygon = this.localPolygons[i];
-            const translation = translations[i];
-            const vertices = [];
-            for (let j = 0; j < localPolygon.vertices.length; j++) {
-                vertices[j] = Vector2D.addMultiplied(
-                    translation, localPolygon.vertices[j], 0.2
-                );
-            }
-            globalPolygons[i] = ConvexPolygon.of(vertices);
-        }
-
-        const renderer = context.getRenderer();
-        for (const globalPolygon of globalPolygons) {
-            let vertex = globalPolygon.vertices[0];
-            renderer.beginPath();
-            renderer.moveTo(vertex.x, vertex.y);
-            for (let i = 1; i < globalPolygon.vertices.length; i++) {
-                vertex = globalPolygon.vertices[i];
-                renderer.lineTo(vertex.x, vertex.y);
-            }
-            renderer.closePath();
-            renderer.strokeStyle = 'black';
-            renderer.lineWidth = 0.01;
-            renderer.stroke();
-        }
-        for (let i = 0; i < globalPolygons.length - 1; i++) {
-            const polygon0 = globalPolygons[i];
-            for (let j = i + 1; j < globalPolygons.length; j++) {
-                const polygon1 = globalPolygons[j];
-                const contact = convexPolygonVsConvexPolygon(polygon0, polygon1);
-                if (contact !== null) {
-                    for (const contactPoint of contact.contactPoints) {
-                        const position = contactPoint.position;
-                        renderer.beginPath();
-                        renderer.arc(position.x, position.y, 0.03, 0, 2 * Math.PI);
-                        renderer.fillStyle = 'red';
-                        renderer.fill();
-                    }
-                }
-            }
-        }*/
     }
 };

@@ -116,7 +116,7 @@ class Body {
     }
 
     setTrueAcceleration(trueAcceleration: Vector2D) {
-        console.log(this.physicsEngine.deltaTime);
+        // console.log(this.physicsEngine.deltaTime);
         const deltaTime = this.physicsEngine.deltaTime;
         this.acceleration.set(Vector2D.multiply(
             trueAcceleration, deltaTime * deltaTime
