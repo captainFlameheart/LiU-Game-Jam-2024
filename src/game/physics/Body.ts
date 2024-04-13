@@ -118,6 +118,17 @@ class Body {
         ));
     }
 
+    applyForce(trueForce: Vector2D){
+        const deltaTime = this.physicsEngine.deltaTime
+        this.acceleration.addMultiplied(trueForce,deltaTime*deltaTime*this.lightness)
+
+    }
+    applyTorqe(trueTorqe:  number){
+        const deltaTime = this.physicsEngine.deltaTime
+        this.angularAcceleration += trueTorqe,deltaTime*deltaTime*this.angularAcceleration
+    }
+    
+
     applyDisplacedImpulseInDirection(
         displacement: Vector2D, direction: Vector2D, scalar: number
     ) {
