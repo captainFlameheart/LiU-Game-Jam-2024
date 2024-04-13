@@ -50,6 +50,10 @@ class MainGame implements SplitScreenGame {
     }
 
     initialize(context: SplitScreenGameContext): Promise<void> {
+                
+        this.nGon = new NGon(this);
+        this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
+
         return this.loadAssets(context).then(
             () => this.goat.initialize(this, context)
         ).then(() => {
@@ -73,9 +77,6 @@ class MainGame implements SplitScreenGame {
         this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1))
         //this.snow.push(Snow.letItSnow(context, 1, 0.1, 1, 0.75))    
         
-        
-        this.nGon = new NGon(this);
-        this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
 
             const body0 = Body.of(this.physicsEngine);
