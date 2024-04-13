@@ -10,14 +10,11 @@ class MainGame implements SplitScreenGame {
     frameRateMeasurmentCounter: number = 0;
 
     playerHats: Map<number, Hat> = new Map<number, Hat>();
-<<<<<<< HEAD
     snow: Snow[] = [];
-=======
 
     ready: Array<boolean> = Array(MainGame.MAX_PLAYERS);
 
     inGame: boolean = false;
->>>>>>> 540c00f28191b91595d62e034ffda2a7163d4284
 
     constructor() {
         this.physicsEngine = PhysicsEngine.of();
