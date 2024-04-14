@@ -8,6 +8,7 @@ This project was developed during the Lithe-kod organized GameJam in spring 2024
 * Physics 🍎
 * Xbox controller support 🎮
 * snow (Blazingly slow)❄️
+* Level Editor
 * Audio 🔊
 * Floppy goat 🐐 
 * Blazingly fast💥
