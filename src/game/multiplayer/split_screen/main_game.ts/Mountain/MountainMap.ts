@@ -87,5 +87,24 @@ const targetPoint = Vector2D.cartesian(lastInnerArray[0], lastInnerArray[1]);
 
 
     }
+
+    render(
+        context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number
+    ) {
+        const renderer = context.getRenderer();
+        renderer.strokeStyle = 'white';
+        renderer.lineWidth = 0.1;
+        for (const chain of rectsData) {
+            if (chain.length === 0) {
+                continue;
+            }
+            renderer.beginPath();
+            renderer.moveTo(chain[0][0], chain[0][1]);
+            for (let i = 1; i < chain.length; i++) {
+                renderer.lineTo(chain[i][0], chain[i][1]);
+            }
+            renderer.stroke();
+        }
+    }
     
 }

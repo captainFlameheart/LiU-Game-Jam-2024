@@ -61,17 +61,16 @@ class MainGame implements SplitScreenGame {
 
     loadAssets(context: SplitScreenGameContext): Promise<void> {
         const promised_hat: Promise<void | ImageBitmap> = loadImage('../images/hat.png').then(hatImage => {
-            this.hatImage = hatImage;
+          this.hatImage = hatImage;
         });
 
-        const promised_snow: Promise<void | ImageBitmap> = loadImage('../images/edvard.png').then(
-            snowImage => {
-                this.snowImage = snowImage;
-            }
-        );
+        const promised_snow: Promise<void | ImageBitmap> = loadImage('../images/edvard.png').then(snowImage => {
+          this.snowImage = snowImage;
+        });
 
         const promised_goat_scream: Promise<void | HTMLAudioElement> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
           this.goatScream = goatScream;
+          this.goatScream.volume = 0.20;
         });
 
         const promised_smack: Promise<void | HTMLAudioElement> = loadAudio('../audio/smack.wav').then(smackSound => {
@@ -233,8 +232,6 @@ class MainGame implements SplitScreenGame {
 
 
         if (!this.inGame) {
-            this.goatScream?.play();
-
             const anyAReleased = this.aButtonChanged.reduce((prev, current, i) => {
                 return prev || (current && !context.aButtonPressed(i));
             }, false);
@@ -424,6 +421,28 @@ class MainGame implements SplitScreenGame {
             for (let i = 0; i < contactPoints.length; i++) {
                 const contactPoint = contactPoints[i];
                 const impulse = contactConstraint.contactPointImpulses[i];
+                const contactKey = ContactKey.fromString(contactKeyString);
+                
+                //console.log(impulse.normalImpulse / context.getTickDeltaTime());
+                if (impulse.normalImpulse / context.getTickDeltaTime() > 0.8) {
+                    this.smackSound?.play();
+                }
+
+                
+
+                if (impulse.normalImpulse / context.getTickDeltaTime() > 0.7) {
+                  if (this.physicsEngine.bodies[contactKey.body0] == this.goat.head.body) {
+                    this.goatScream?.play();
+                  }
+
+                  if (this.physicsEngine.bodies[contactKey.body1] == this.goat.head.body) {
+                    this.goatScream?.play();
+                  }
+                    
+                }
+
+
+
                 const position = contactPoint.position;
                 const normalImpulse = impulse.normalImpulse;
 
@@ -549,7 +568,7 @@ class MainGame implements SplitScreenGame {
             this.renderBackground(context, region, lag);
             this.renderHouse(context, region, lag);
             this.renderCameras(context, region, lag);
-            this.renderBodies(context, region, lag);
+            //this.renderBodies(context, region, lag);
             this.renderContacts(context, region, lag);
             this.renderSnow(context, region, lag);
             this.goat.render(context, region, lag, playerIndex);
@@ -564,6 +583,9 @@ class MainGame implements SplitScreenGame {
 
                 hat.render(context.getRenderer());
             });
+
+            this.requireMap().render(context, region, lag, playerIndex);
+
         }
 
     }

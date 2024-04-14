@@ -32,7 +32,7 @@ class PhysicsEngine {
     }
 
     static of() {
-        const velocityIterations = 8;
+        const velocityIterations = 20;
         const positionIterations = 2;
         const warmStarting = 1;
         const penetrationTolerance = 0.03;
