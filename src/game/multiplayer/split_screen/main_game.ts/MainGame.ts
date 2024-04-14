@@ -465,7 +465,7 @@ class MainGame implements SplitScreenGame {
             this.renderBackground(context, region, lag);
             this.renderHouse(context, region, lag);
             this.renderCameras(context, region, lag);
-            this.renderBodies(context, region, lag);
+            //this.renderBodies(context, region, lag);
             this.renderContacts(context, region, lag);
             this.renderSnow(context, region, lag);
             this.goat.render(context, region, lag, playerIndex);
@@ -479,6 +479,9 @@ class MainGame implements SplitScreenGame {
 
                 hat.render(context.getRenderer());
             });
+
+            this.requireMap().render(context, region, lag, playerIndex);
+
         }
     }
 };
