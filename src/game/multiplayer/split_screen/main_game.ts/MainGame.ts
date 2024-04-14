@@ -4,6 +4,7 @@ class MainGame implements SplitScreenGame {
 
     hatImage: ImageBitmap | null;
     goatScream: HTMLAudioElement | null;
+    smackSound: HTMLAudioElement | null;
     snowImage: ImageBitmap | null;
       
     physicsEngine: PhysicsEngine;
@@ -28,12 +29,14 @@ class MainGame implements SplitScreenGame {
 
     constructor(
         physicsEngine: PhysicsEngine, hatImage: ImageBitmap | null, 
-        goatScream: HTMLAudioElement | null, goat: Goat, snowImage: ImageBitmap | null
+        goatScream: HTMLAudioElement | null, smackSound: HTMLAudioElement | null,
+        goat: Goat, snowImage: ImageBitmap | null
     ) {
         this.nGon = null;
         this.physicsEngine = physicsEngine;
         this.hatImage = hatImage;
         this.goatScream = goatScream;
+        this.smackSound = smackSound;
         this.goat = goat;
         this.snowImage = snowImage
         for (let i = 0; i < MainGame.MAX_PLAYERS; i++) {
@@ -44,9 +47,10 @@ class MainGame implements SplitScreenGame {
     static of() {
         const hatImage = null;
         const goatScream = null;
+        const smackSound = null;
         const snowImage = null;
         const goat = Goat.of();
-        return new MainGame(PhysicsEngine.of(), hatImage, goatScream, goat, snowImage);
+        return new MainGame(PhysicsEngine.of(), hatImage, goatScream, smackSound, goat, snowImage);
     }
 
     loadAssets(context: SplitScreenGameContext): Promise<void> {
@@ -64,7 +68,11 @@ class MainGame implements SplitScreenGame {
           this.goatScream = goatScream;
         });
 
-        return Promise.all([promised_hat, promised_snow, promised_goat_scream]).then();
+        const promised_smack: Promise<void | HTMLAudioElement> = loadAudio('../audio/smack.wav').then(smackSound => {
+          this.smackSound = smackSound;
+        });
+
+        return Promise.all([promised_hat, promised_snow, promised_goat_scream, promised_smack]).then();
     }
 
 
