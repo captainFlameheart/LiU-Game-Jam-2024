@@ -190,7 +190,7 @@ class MainGame implements SplitScreenGame {
         context.getPlayerContext(index).camera.scale = 10;
 
         const newHat = new Hat(this, index);
-        newHat.initialize(1, 1.3, 0, 0);  // Parameters can be adjusted as needed
+        newHat.initialize(1, 1.3, 0, 0, index * 4);  // Parameters can be adjusted as needed
         this.assignHatToPlayer(index, newHat);
     }
 
@@ -229,7 +229,7 @@ class MainGame implements SplitScreenGame {
 
         resultantVector.normalize()
 
-        nGon.Force(Vector2D.multiply(resultantVector,4));  // Assuming NGon's body has an applyForce method
+        nGon.applyForce(Vector2D.multiply(resultantVector,4));  // Assuming NGon's body has an applyForce method
 
     }
 
