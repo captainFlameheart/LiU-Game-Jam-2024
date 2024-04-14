@@ -88,20 +88,49 @@ const targetPoint = Vector2D.cartesian(lastInnerArray[0], lastInnerArray[1]);
 
     }
 
+    moveVertexAlongNormal(
+        chain: number[][], vertexIndex: number, normalIndex: number, 
+        amount: number
+    ) {
+        const vertex = Vector2D.cartesian(
+            chain[vertexIndex][0], chain[vertexIndex][1]
+        );
+        const vertex0 = Vector2D.cartesian(
+            chain[normalIndex][0], chain[normalIndex][1]
+        );
+        const vertex1 = Vector2D.cartesian(
+            chain[normalIndex + 1][0], chain[normalIndex + 1][1]
+        );
+        const normal = Vector2D.perpendicularCounterClockwise(
+            Vector2D.subtract(vertex1, vertex0)
+        );
+        normal.normalize();
+        return Vector2D.addMultiplied(
+            vertex, normal, -amount
+        );
+    }
+
     render(
         context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number
     ) {
         const renderer = context.getRenderer();
         renderer.strokeStyle = 'white';
-        renderer.lineWidth = 0.1;
+        renderer.lineWidth = 0.2;
+        const moveAmount = 0.5 * renderer.lineWidth;
         for (const chain of rectsData) {
-            if (chain.length === 0) {
+            if (chain.length <= 1) {
                 continue;
             }
             renderer.beginPath();
-            renderer.moveTo(chain[0][0], chain[0][1]);
-            for (let i = 1; i < chain.length; i++) {
-                renderer.lineTo(chain[i][0], chain[i][1]);
+            let position = this.moveVertexAlongNormal(
+                chain, 0, 0, moveAmount
+            );
+            renderer.moveTo(position.x, position.y);
+            for (let i = 1; i < chain.length - 1; i++) {
+                position = this.moveVertexAlongNormal(
+                    chain, i, i, moveAmount
+                )
+                renderer.lineTo(position.x, position.y);
             }
             renderer.stroke();
         }

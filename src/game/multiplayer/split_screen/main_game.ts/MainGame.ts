@@ -7,6 +7,7 @@ class MainGame implements SplitScreenGame {
     hatImage: ImageBitmap | null;
     goatScream: HTMLAudioElement | null;
     smackSound: HTMLAudioElement | null;
+    music: HTMLAudioElement | null;
     snowImage: ImageBitmap | null;
 
     winner: number = 5;
@@ -14,6 +15,8 @@ class MainGame implements SplitScreenGame {
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
+
+    particleSystem: ParticleSystem;
 
     playerHats: Map<number, Hat> = new Map<number, Hat>();
     snow: Snow[] = [];
@@ -35,7 +38,7 @@ class MainGame implements SplitScreenGame {
     constructor(
         physicsEngine: PhysicsEngine, hatImage: ImageBitmap | null, 
         goatScream: HTMLAudioElement | null, smackSound: HTMLAudioElement | null,
-        goat: Goat, snowImage: ImageBitmap | null
+        music:  HTMLAudioElement | null, goat: Goat, snowImage: ImageBitmap | null
     ) {
         this.map = null;
         this.nGon = null;
@@ -43,20 +46,24 @@ class MainGame implements SplitScreenGame {
         this.hatImage = hatImage;
         this.goatScream = goatScream;
         this.smackSound = smackSound;
+        this.music = music;
         this.goat = goat;
         this.snowImage = snowImage
         for (let i = 0; i < MainGame.MAX_PLAYERS; i++) {
             this.ready[i] = this.aButtonPressedLast[i] = this.aButtonChanged[i] = false;
         }
+
+        this.particleSystem = new ParticleSystem([]);
     }
 
     static of() {
         const hatImage = null;
         const goatScream = null;
         const smackSound = null;
+        const music = null;
         const snowImage = null;
         const goat = Goat.of();
-        return new MainGame(PhysicsEngine.of(), hatImage, goatScream, smackSound, goat, snowImage);
+        return new MainGame(PhysicsEngine.of(), hatImage, goatScream, smackSound, music, goat, snowImage);
     }
 
     loadAssets(context: SplitScreenGameContext): Promise<void> {
@@ -75,6 +82,11 @@ class MainGame implements SplitScreenGame {
 
         const promised_smack: Promise<void | HTMLAudioElement> = loadAudio('../audio/smack.wav').then(smackSound => {
           this.smackSound = smackSound;
+        });
+
+        const promised_music: Promise<void | HTMLAudioElement> = loadAudio('../audio/Spazzmatica Polka.mp3').then(music => {
+          this.music = music;
+          this.music.loop = true;
         });
 
         return Promise.all([promised_hat, promised_snow, promised_goat_scream, promised_smack]).then();
@@ -247,6 +259,7 @@ class MainGame implements SplitScreenGame {
 
 
                 this.inGame ||= nReady > 0 && nReady == context.playerContexts.size;
+                if (this.inGame) this.music?.play();
             }
 
             let pressedA = Array<boolean>(MainGame.MAX_PLAYERS);
@@ -272,13 +285,13 @@ class MainGame implements SplitScreenGame {
 
         this.physicsEngine.tick();
 
+        this.particleSystem.tick(context, this);
+
         this.snow.forEach(snow => {
             snow.tick()
         })
 
         const deltaTime = context.getTickDeltaTime();
-
-
 
         context.playerContexts.forEach((playerContext, playerIndex) => {
             const leftThumbstickVector = context.getLeftThumbstickVector(
@@ -587,6 +600,8 @@ class MainGame implements SplitScreenGame {
             });
 
             this.requireMap().render(context, region, lag, playerIndex);
+
+            this.particleSystem.render(context, region, lag, playerIndex, this);
 
         }
 
