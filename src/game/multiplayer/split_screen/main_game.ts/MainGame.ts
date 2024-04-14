@@ -77,7 +77,7 @@ class MainGame implements SplitScreenGame {
 
         const promised_goat_scream: Promise<void | HTMLAudioElement> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
           this.goatScream = goatScream;
-          this.goatScream.volume = 0.20;
+          this.goatScream.volume = 0.25;
         });
 
         const promised_smack: Promise<void | HTMLAudioElement> = loadAudio('../audio/smack.wav').then(smackSound => {
@@ -86,6 +86,7 @@ class MainGame implements SplitScreenGame {
 
         const promised_music: Promise<void | HTMLAudioElement> = loadAudio('../audio/Spazzmatica Polka.mp3').then(music => {
           this.music = music;
+          this.music.volume = 0.8;
           this.music.loop = true;
         });
 
