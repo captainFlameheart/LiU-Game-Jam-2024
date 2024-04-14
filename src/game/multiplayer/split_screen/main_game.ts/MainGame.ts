@@ -86,7 +86,10 @@ class MainGame implements SplitScreenGame {
     }
 
     initialize(context: SplitScreenGameContext): Promise<void> {
-        
+
+        const map = new MountainMap("", this);
+
+
 
         this.nGon = new NGon(this);
         this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
