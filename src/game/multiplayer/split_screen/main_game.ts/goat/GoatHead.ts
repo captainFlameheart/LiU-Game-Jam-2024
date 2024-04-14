@@ -35,6 +35,7 @@ class GoatHead {
 
             this.body.lightness = 50;
             this.body.angularLightness = 50;
+            this.body.position = Vector2D.cartesian(100, 0);
             this.body.setTrueAcceleration(Vector2D.cartesian(0, -12));
             game.physicsEngine.bodies.push(this.body);
         });

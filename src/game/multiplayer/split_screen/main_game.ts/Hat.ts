@@ -92,7 +92,7 @@ class Hat {
         this.player_index = player_index;
     }
 
-    initialize(height: number, width: number, centerX: number, centerY: number) {
+    initialize(height: number, width: number, centerX: number, centerY: number, x: number) {
         const material0 = Material.of(0, 0.001, 0.0);
         const origin_move = -0 * height;
         const wall_thickness = 0.06 * width;
@@ -144,7 +144,7 @@ class Hat {
         
 
         const hat_bottom = Body.of(this.game.physicsEngine);
-        hat_bottom.position.set(Vector2D.cartesian(0, 5));
+        hat_bottom.position.set(Vector2D.cartesian(x, 3));
         hat_bottom.setTrueVelocity(Vector2D.cartesian(0, 0));
         hat_bottom.angularLightness = 10;
         hat_bottom.angle = Math.PI;

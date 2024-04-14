@@ -12,6 +12,6 @@ function main() {
     */
 
     
-    const fps = 60;
+    const fps = 90;
     startGameLoop(game, fps);
 }
