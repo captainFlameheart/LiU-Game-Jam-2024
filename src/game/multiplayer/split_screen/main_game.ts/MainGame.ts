@@ -1,8 +1,12 @@
+
+
 class MainGame implements SplitScreenGame {
     static THUMBSTICK_DEAD_ZONE = 0.1;
     static MAX_PLAYERS: number = 4;
 
     hatImage: ImageBitmap | null;
+    mountain1: ImageBitmap | null;
+    //mountain2: ImageBitmap | null;
 
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
@@ -21,25 +25,40 @@ class MainGame implements SplitScreenGame {
 
     constructor(
         physicsEngine: PhysicsEngine, hatImage: ImageBitmap | null, 
-        goat: Goat
+        goat: Goat, mountain1: ImageBitmap | null
     ) {
         this.nGon = null;
         this.physicsEngine = physicsEngine;
         this.hatImage = hatImage;
+        this.mountain1 = mountain1;
         this.goat = goat;
     }
 
     static of() {
         const hatImage = null;
+        const mountain1 = null;
+
         const goat = Goat.of();
-        return new MainGame(PhysicsEngine.of(), hatImage, goat);
+        return new MainGame(PhysicsEngine.of(), hatImage, goat, mountain1);
     }
 
     loadAssets(context: SplitScreenGameContext): Promise<void> {
-        return loadImage('../images/hat.png').then(hatImage => {
-            this.hatImage = hatImage;
+        // Create an array of promises for the images to be loaded
+        const promises = [
+            loadImage('../images/hat.png'),
+            loadImage('../images/mountains1.png')
+        ];
+    
+        // Use Promise.all to wait for all images to be loaded
+        return Promise.all(promises).then(images => {
+            // Assign loaded images to properties
+            this.hatImage = images[0];
+            this.mountain1 = images[1];
+        }).catch(error => {
+            console.error("Failed to load one or more images:", error);
         });
     }
+    
 
 
     requireNGon(){
@@ -50,6 +69,10 @@ class MainGame implements SplitScreenGame {
     }
 
     initialize(context: SplitScreenGameContext): Promise<void> {
+
+
+
+        const mountain = new MountainMap("", this);
                 
         this.nGon = new NGon(this);
         this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
@@ -97,7 +120,7 @@ class MainGame implements SplitScreenGame {
                 TransformedConvexPolygon.of(localPolygon0), 
                 material0
             ));
-            this.physicsEngine.bodies.push(body1);
+            //this.physicsEngine.bodies.push(body1);
         });
     }
 
@@ -152,7 +175,7 @@ class MainGame implements SplitScreenGame {
 
         const nGon = this.requireNGon(); 
 
-        nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-2));
+        nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-10));
 
         let resultantVector = new Vector2D(0, 0);
         this.playerHats.forEach((hat) => {
@@ -163,9 +186,9 @@ class MainGame implements SplitScreenGame {
         });
 
         resultantVector.normalize()
-        console.log(resultantVector)
+
         nGon.body.applyForce(Vector2D.multiply(resultantVector,1.5));  // Assuming NGon's body has an applyForce method
-        console.log('Applied force to NGon:', resultantVector);
+
     }
 
     tick(context: SplitScreenGameContext): void {

@@ -41,6 +41,15 @@ class Vector2D {
         return new Vector2D(vector0.x - vector1.x, vector0.y - vector1.y);
     }
 
+
+    // Static method for linear interpolation between two vectors
+    static lerp(start: Vector2D, end: Vector2D, t: number): Vector2D {
+        return new Vector2D(
+            start.x + (end.x - start.x) * t,
+            start.y + (end.y - start.y) * t
+        );
+    }
+
     static multiply(vector: Vector2D, scalar: number) {
         return new Vector2D(vector.x * scalar, vector.y * scalar);
     }
@@ -184,7 +193,7 @@ class Vector2D {
         const scalar = 1 / length;
         this.x *= scalar;
         this.y *= scalar;
-        
+
         }
     }
 }

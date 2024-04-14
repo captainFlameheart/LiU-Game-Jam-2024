@@ -14,11 +14,74 @@ function reversePoints(points: Vector2D[]): Vector2D[] {
     return points.slice().reverse(); // Creates a new array and reverses the order of the points
 }
 
+
+
+function bezier(points: Vector2D[]): { b: (t: number) => Vector2D, db_dt: (t: number) => Vector2D } {
+    if (points.length === 0) throw new Error('no point to interpolate');
+
+    function bezierPoint(t: number, start: number = 0, end: number = points.length - 1): Vector2D {
+        if (end === start) return points[start];
+        return Vector2D.lerp(bezierPoint(t, start, end - 1), bezierPoint(t, start + 1, end), t);
+    }
+
+    function bezierTangent(t: number, start: number = 0, end: number = points.length - 1): Vector2D {
+        if (end === start) return new Vector2D(0, 0);
+        if (end - start === 1) return Vector2D.subtract(points[end], points[start]);
+        return Vector2D.add(
+            Vector2D.lerp(bezierTangent(t, start, end - 1), bezierTangent(t, start + 1, end), t),
+            Vector2D.subtract(bezierPoint(t, start + 1, end), bezierPoint(t, start, end - 1))
+        );
+    }function generatePointsOnBezierCurve(curve: { b: (t: number) => Vector2D }, numberOfPoints: number): Vector2D[] {
+        let points: Vector2D[] = [];
+        for (let i = 0; i <= numberOfPoints; i++) {
+            let t = i / numberOfPoints;
+            points.push(curve.b(t));
+        }
+        return points;
+    }
+
+    return {
+        b: (t: number) => bezierPoint(t),
+        db_dt: (t: number) => bezierTangent(t)
+    };
+}
+
+
+function generatePointsOnBezierCurve(curve: { b: (t: number) => Vector2D }, numberOfPoints: number): Vector2D[] {
+    let points: Vector2D[] = [];
+    for (let i = 0; i <= numberOfPoints; i++) {
+        let t = i / numberOfPoints;
+        points.push(curve.b(t));
+    }
+    return points;
+}
+
+function smoothPolygon(polygons: Vector2D[][], polygonIndex: number, numberOfPoints: number): Vector2D[][] {
+    if (polygonIndex < 0 || polygonIndex >= polygons.length) {
+        throw new Error("Polygon index out of range");
+    }
+    
+    // Extract the polygon to smooth
+    const controlPoints = polygons[polygonIndex];
+
+    // Create the Bezier curve function
+    const bezierCurve = bezier(controlPoints);
+
+    // Generate points along the curve
+    const smoothPoints = generatePointsOnBezierCurve(bezierCurve, numberOfPoints);
+
+    // Replace the original polygon with its smoothed version
+    const newPolygons = polygons.slice();  // Create a copy of the polygons array
+    newPolygons[polygonIndex] = smoothPoints;  // Replace specific polygon with smoothed one
+
+    return newPolygons;
+}
+
 class Hat {
     game: any; // Placeholder for the game object, which includes the physics engine
     body: any;
     player_index: number;
-    static gravity: number = -3
+    static gravity: number = -10
     height: number = 0
     width: number = 0
 
@@ -30,24 +93,24 @@ class Hat {
     }
 
     initialize(height: number, width: number, centerX: number, centerY: number) {
-        const material0 = Material.of(0, 0.1, 0.0);
+        const material0 = Material.of(0, 0.001, 0.0);
         const origin_move = -0 * height;
         const wall_thickness = 0.06 * width;
         const wall_height = 0.3 * height;
         const lip_height = 0.05 * height;
         const lip_outward = 0.2 * width;
+        const smoothness = 0 * width;
 
         this.width = width;
         this.height = height;
 
 
         // Define polygons
-        const polygons = [
-            [
-                new Vector2D(0.25 * width + centerX, 0.05 * height - origin_move + centerY),
-                new Vector2D(-0.25 * width + centerX, 0.05 * height - origin_move + centerY),
-                new Vector2D(-0.25 * width + centerX, -0.05 * height - origin_move + centerY),
-                new Vector2D(0.25 * width + centerX, -0.05 * height - origin_move + centerY)
+        let polygons = [[
+                new Vector2D(0.25 * width + centerX , -0.05 * height - origin_move + centerY),
+                new Vector2D(0.25 * width + centerX - smoothness, 0.05 * height - origin_move + centerY),
+                new Vector2D(-0.25 * width + centerX + smoothness, 0.05 * height - origin_move + centerY),
+                new Vector2D(-0.25 * width + centerX , -0.05 * height - origin_move + centerY)
             ],
             [
                 new Vector2D((0.25 - wall_thickness) * width + centerX, -0.05 * height - origin_move - wall_height + centerY),
@@ -68,12 +131,17 @@ class Hat {
                 new Vector2D(0.25 * width + centerX, -0.05 * height - origin_move - wall_height - lip_height + centerY)
             ],
             [
-                new Vector2D((-0.25 - lip_outward) * width + centerX, -0.05 * height - origin_move - wall_height + centerY),
-                new Vector2D(-0.25 * width + centerX, -0.05 * height - origin_move - wall_height + centerY),
                 new Vector2D(-0.25 * width + centerX, -0.05 * height - origin_move - wall_height - lip_height + centerY),
-                new Vector2D((-0.25 - lip_outward) * width + centerX, -0.05 * height - origin_move - wall_height - lip_height + centerY)
+                new Vector2D((-0.25 - lip_outward) * width + centerX, -0.05 * height - origin_move - wall_height - lip_height + centerY),
+                new Vector2D((-0.25 - lip_outward) * width + centerX, -0.05 * height - origin_move - wall_height + centerY),
+                new Vector2D(-0.25 * width + centerX, -0.05 * height - origin_move - wall_height + centerY)
             ]
         ];
+        
+        polygons = smoothPolygon(polygons, 0 ,10);
+        polygons = smoothPolygon(polygons, 3, 10);
+        polygons = smoothPolygon(polygons, 4, 10);
+        
 
         const hat_bottom = Body.of(this.game.physicsEngine);
         hat_bottom.position.set(Vector2D.cartesian(0, 5));
