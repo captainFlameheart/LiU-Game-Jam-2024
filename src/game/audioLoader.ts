@@ -6,4 +6,6 @@ function loadAudio(path: string): Promise<HTMLAudioElement> {
         };
         audio.src = path;
     });
+
+    (HTMLAud | )
 }
