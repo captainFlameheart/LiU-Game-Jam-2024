@@ -77,7 +77,7 @@ class MainGame implements SplitScreenGame {
 
         const promised_goat_scream: Promise<void | HTMLAudioElement> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
           this.goatScream = goatScream;
-          this.goatScream.volume = 0.25;
+          this.goatScream.volume = 0.30;
         });
 
         const promised_smack: Promise<void | HTMLAudioElement> = loadAudio('../audio/smack.wav').then(smackSound => {
@@ -86,7 +86,7 @@ class MainGame implements SplitScreenGame {
 
         const promised_music: Promise<void | HTMLAudioElement> = loadAudio('../audio/Spazzmatica Polka.mp3').then(music => {
           this.music = music;
-          this.music.volume = 0.8;
+          this.music.volume = 0.7;
           this.music.loop = true;
         });
 
@@ -190,7 +190,7 @@ class MainGame implements SplitScreenGame {
         context.getPlayerContext(index).camera.scale = 10;
 
         const newHat = new Hat(this, index);
-        newHat.initialize(1, 1.3, 0, 0, index *4);  // Parameters can be adjusted as needed
+        newHat.initialize(1, 1.3, 0, 0);  // Parameters can be adjusted as needed
         this.assignHatToPlayer(index, newHat);
     }
 
@@ -212,7 +212,7 @@ class MainGame implements SplitScreenGame {
         return this.playerHats.get(playerIndex);
     }
 
-    applyForcesToNGone() {
+    ForcesToNGone() {
 
         const nGon = this.goat.head.requireBody(); 
 
@@ -229,7 +229,7 @@ class MainGame implements SplitScreenGame {
 
         resultantVector.normalize()
 
-        nGon.applyForce(Vector2D.multiply(resultantVector,2));  // Assuming NGon's body has an applyForce method
+        nGon.Force(Vector2D.multiply(resultantVector,4));  // Assuming NGon's body has an applyForce method
 
     }
 
@@ -238,7 +238,7 @@ class MainGame implements SplitScreenGame {
         //const nGon = this.requireNGon();
         //nGon.tick(context);  
 
-        this.applyForcesToNGone();
+        this.ForcesToNGone();
 
 
         const map = this.requireMap()
