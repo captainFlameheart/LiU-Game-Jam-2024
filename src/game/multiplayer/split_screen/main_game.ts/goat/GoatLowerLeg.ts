@@ -22,7 +22,7 @@ class GoatLowerLeg {
         }).then(() => {
             this.body = Body.of(game.physicsEngine);
             const bounciness = 0;
-            const friction = 0.5;
+            const friction = 1;
             const tangentSpeed = 0;
             this.body.polygons.push(PhysicalPolygon.withCollisionFiltering(
                 TransformedConvexPolygon.of([
@@ -34,10 +34,10 @@ class GoatLowerLeg {
                 collisionCategory, collidableCategories
             ));
 
-            this.body.angularLightness = 100;
-            this.body.lightness = 100;
+            this.body.angularLightness = 50;
+            this.body.lightness = 50;
 
-            this.body.setTrueAcceleration(Vector2D.cartesian(0, -9.81));
+            this.body.setTrueAcceleration(Vector2D.cartesian(0, -12));
             game.physicsEngine.bodies.push(this.body);
         });
     }

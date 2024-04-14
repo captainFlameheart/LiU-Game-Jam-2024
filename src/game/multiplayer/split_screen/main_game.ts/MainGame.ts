@@ -8,6 +8,8 @@ class MainGame implements SplitScreenGame {
     goatScream: HTMLAudioElement | null;
     smackSound: HTMLAudioElement | null;
     snowImage: ImageBitmap | null;
+
+    winner: number = 5;
       
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
@@ -63,17 +65,16 @@ class MainGame implements SplitScreenGame {
 
     loadAssets(context: SplitScreenGameContext): Promise<void> {
         const promised_hat: Promise<void | ImageBitmap> = loadImage('../images/hat.png').then(hatImage => {
-            this.hatImage = hatImage;
+          this.hatImage = hatImage;
         });
 
-        const promised_snow: Promise<void | ImageBitmap> = loadImage('../images/edvard.png').then(
-            snowImage => {
-                this.snowImage = snowImage;
-            }
-        );
+        const promised_snow: Promise<void | ImageBitmap> = loadImage('../images/edvard.png').then(snowImage => {
+          this.snowImage = snowImage;
+        });
 
         const promised_goat_scream: Promise<void | HTMLAudioElement> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
           this.goatScream = goatScream;
+          this.goatScream.volume = 0.20;
         });
 
         const promised_smack: Promise<void | HTMLAudioElement> = loadAudio('../audio/smack.wav').then(smackSound => {
@@ -103,7 +104,7 @@ class MainGame implements SplitScreenGame {
         this.map = map;
 
         this.nGon = new NGon(this);
-        this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
+        //this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
         return this.loadAssets(context).then(
         ).then(() => {
@@ -206,6 +207,7 @@ class MainGame implements SplitScreenGame {
 
         const nGon = this.requireNGon(); 
 
+
         nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-10));
 
         let resultantVector = new Vector2D(0, 0);
@@ -218,21 +220,23 @@ class MainGame implements SplitScreenGame {
 
         resultantVector.normalize()
 
-        nGon.body.applyForce(Vector2D.multiply(resultantVector,1.5));  // Assuming NGon's body has an applyForce method
+        nGon.body.applyForce(Vector2D.multiply(resultantVector,3));  // Assuming NGon's body has an applyForce method
 
     }
 
     tick(context: SplitScreenGameContext): void {
 
-        const nGon = this.requireNGon();
-        nGon.tick(context);  
-        this.applyForcesToNGone();
+        //const nGon = this.requireNGon();
+        //nGon.tick(context);  
+        //this.applyForcesToNGone();
 
+
+        const map = this.requireMap()
+
+        map.tick(context, 200);
 
 
         if (!this.inGame) {
-            this.goatScream?.play();
-
             const anyAReleased = this.aButtonChanged.reduce((prev, current, i) => {
                 return prev || (current && !context.aButtonPressed(i));
             }, false);
@@ -307,6 +311,27 @@ class MainGame implements SplitScreenGame {
                 10, -rightThumbstickVector.y * deltaTime
             );
         });
+    }
+
+    isPlayerTouchingBody(playerIndex: number, targetBody: Body): boolean {
+        let hat = this.getHatForPlayer(playerIndex); // Assuming getHatForPlayer returns the hat object
+
+        if (!hat) {
+            return false; // No hat found for the given player
+        }
+
+        let isTouching = false;
+        this.physicsEngine.contactConstraints.forEach((contactConstraint: ContactConstraint, contactKeyString: string) => {
+            const contact_info = ContactKey.fromString(contactKeyString);
+
+            // Check for contact between the hat's body and the target body
+            if ((this.physicsEngine.bodies[contact_info.body0] === hat.body && this.physicsEngine.bodies[contact_info.body1] === targetBody) || 
+                (this.physicsEngine.bodies[contact_info.body1] === hat.body && this.physicsEngine.bodies[contact_info.body0] === targetBody)) {
+                isTouching = true;
+            }
+        });
+
+        return isTouching;
     }
 
     renderBackground(context: SplitScreenGameContext, region: AABB, lag: number) {
@@ -401,6 +426,28 @@ class MainGame implements SplitScreenGame {
             for (let i = 0; i < contactPoints.length; i++) {
                 const contactPoint = contactPoints[i];
                 const impulse = contactConstraint.contactPointImpulses[i];
+                const contactKey = ContactKey.fromString(contactKeyString);
+                
+                //console.log(impulse.normalImpulse / context.getTickDeltaTime());
+                if (impulse.normalImpulse / context.getTickDeltaTime() > 0.8) {
+                    this.smackSound?.play();
+                }
+
+                
+
+                if (impulse.normalImpulse / context.getTickDeltaTime() > 0.7) {
+                  if (this.physicsEngine.bodies[contactKey.body0] == this.goat.head.body) {
+                    this.goatScream?.play();
+                  }
+
+                  if (this.physicsEngine.bodies[contactKey.body1] == this.goat.head.body) {
+                    this.goatScream?.play();
+                  }
+                    
+                }
+
+
+
                 const position = contactPoint.position;
                 const normalImpulse = impulse.normalImpulse;
 
@@ -458,7 +505,64 @@ class MainGame implements SplitScreenGame {
         renderer.fillStyle = oldFillStyle;
     }
 
-    
+    renderWinner(context: any, region: { start: { x: number, y: number }, end: { x: number, y: number } }) {
+        if (this.winner !== 5) {  // Check if there is a winner
+            const renderer = context.getRenderer();
+            const oldFillStyle = renderer.fillStyle;
+
+            
+            const x = region.start.x;
+            const y = region.start.y;
+            const w = region.end.x - region.start.x;
+            const h = region.end.y - region.start.y;
+
+            console.log(region)
+
+            // Winner text
+            const winnerText = `Winner is Player ${this.winner}`;
+
+            // Try to fit the winner text in the available width
+            const fontSizes = [72, 36, 28, 14, 12, 10, 5, 2];
+            let textDimensions: TextMetrics;
+            let i = 0;
+            do {
+                renderer.font = `${fontSizes[i++]}px Arial`;  // Incrementally smaller font sizes
+                textDimensions = renderer.measureText(winnerText);
+            } while (textDimensions.width >= w && i < fontSizes.length);
+
+            //renderer.save();
+            //renderer.translate(x, y)
+
+            // Draw background
+            renderer.fillStyle = "#cccccc";
+            renderer.fillRect(x, y, w, h);
+
+            renderer.fillStyle = "#dddddd";
+            renderer.fillRect(x + 1, y + 1, w - 2, h - 2);
+
+            // Draw winner text
+            renderer.fillStyle = "black";
+            const oldTransform = renderer.getTransform();
+            renderer.transform(1, 0, 0, -1, 0, 0);
+
+            
+
+            
+            document.title = winnerText;
+
+            renderer.fillText(winnerText, (w - textDimensions.width) / 2, h / 2 + textDimensions.actualBoundingBoxAscent / 2);
+            renderer.setTransform(oldTransform);
+
+            // Restore the original fill style
+            renderer.fillStyle = oldFillStyle;
+
+            //renderer.restore();
+
+            
+        }
+
+    }
+
     render(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void {
         if(!this.inGame) {
             context.playerContexts.forEach((playerContext, playerIndex, map) => {
@@ -473,6 +577,7 @@ class MainGame implements SplitScreenGame {
             this.renderContacts(context, region, lag);
             this.renderSnow(context, region, lag);
             this.goat.render(context, region, lag, playerIndex);
+            this.renderWinner(context, region)
 
             context.playerContexts.forEach((playerContext, playerIndex, map) => {
                 const hat = this.getHatForPlayer(playerIndex);
@@ -489,5 +594,6 @@ class MainGame implements SplitScreenGame {
             this.particleSystem.render(context, region, lag, playerIndex, this);
 
         }
+
     }
 };
