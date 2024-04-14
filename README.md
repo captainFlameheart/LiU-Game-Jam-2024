@@ -6,7 +6,7 @@ This project was developed during the Lithe-kod organized GameJam in spring 2024
 * Gamelobby 🛎️
 * 4-player Co-op 🌈
 * Physics 🍎
-* Xboc controller support 🎮
+* Xbox controller support 🎮
 * snow (Blazingly slow)❄️
 * Audio 🔊
 * Floppy goat 🐐 
