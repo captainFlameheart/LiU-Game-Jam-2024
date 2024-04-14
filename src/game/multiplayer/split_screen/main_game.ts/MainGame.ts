@@ -7,6 +7,7 @@ class MainGame implements SplitScreenGame {
     hatImage: ImageBitmap | null;
     goatScream: HTMLAudioElement | null;
     smackSound: HTMLAudioElement | null;
+    music: HTMLAudioElement | null;
     snowImage: ImageBitmap | null;
 
     winner: number = 5;
@@ -40,7 +41,7 @@ class MainGame implements SplitScreenGame {
     constructor(
         physicsEngine: PhysicsEngine, hatImage: ImageBitmap | null, 
         goatScream: HTMLAudioElement | null, smackSound: HTMLAudioElement | null,
-        goat: Goat, snowImage: ImageBitmap | null
+        music:  HTMLAudioElement | null, goat: Goat, snowImage: ImageBitmap | null
     ) {
         this.mountain1Image = null;
         this.mountain2Image = null;
@@ -50,6 +51,7 @@ class MainGame implements SplitScreenGame {
         this.hatImage = hatImage;
         this.goatScream = goatScream;
         this.smackSound = smackSound;
+        this.music = music;
         this.goat = goat;
         this.snowImage = snowImage
         for (let i = 0; i < MainGame.MAX_PLAYERS; i++) {
@@ -63,9 +65,10 @@ class MainGame implements SplitScreenGame {
         const hatImage = null;
         const goatScream = null;
         const smackSound = null;
+        const music = null;
         const snowImage = null;
         const goat = Goat.of();
-        return new MainGame(PhysicsEngine.of(), hatImage, goatScream, smackSound, goat, snowImage);
+        return new MainGame(PhysicsEngine.of(), hatImage, goatScream, smackSound, music, goat, snowImage);
     }
 
     loadAssets(context: SplitScreenGameContext): Promise<void> {
@@ -79,11 +82,17 @@ class MainGame implements SplitScreenGame {
 
         const promised_goat_scream: Promise<void | HTMLAudioElement> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
           this.goatScream = goatScream;
-          this.goatScream.volume = 0.20;
+          this.goatScream.volume = 0.30;
         });
 
         const promised_smack: Promise<void | HTMLAudioElement> = loadAudio('../audio/smack.wav').then(smackSound => {
           this.smackSound = smackSound;
+        });
+
+        const promised_music: Promise<void | HTMLAudioElement> = loadAudio('../audio/Spazzmatica Polka.mp3').then(music => {
+          this.music = music;
+          this.music.volume = 0.7;
+          this.music.loop = true;
         });
 
         const mountain1Promise = loadImage('../images/mountains1.png').then((image) => {
@@ -135,11 +144,11 @@ class MainGame implements SplitScreenGame {
 
         this.nGon = new NGon(this);
         //this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
+        this.physicsEngine.setDeltaTime(context.getTickDeltaTime());
 
         return this.loadAssets(context).then(
+            () => this.goat.initialize(this, context)
         ).then(() => {
-            this.physicsEngine.setDeltaTime(context.getTickDeltaTime());
-            this.goat.initialize(this, context)
             
             const material0 = Material.of(0.0, 0.3, 0.0);
             const localPolygon0 = [
@@ -211,7 +220,7 @@ class MainGame implements SplitScreenGame {
         context.getPlayerContext(index).camera.scale = 10;
 
         const newHat = new Hat(this, index);
-        newHat.initialize(1, 1.3, 0, 0);  // Parameters can be adjusted as needed
+        newHat.initialize(1, 1.3, 0, 0, index * 4);  // Parameters can be adjusted as needed
         this.assignHatToPlayer(index, newHat);
     }
 
@@ -233,24 +242,24 @@ class MainGame implements SplitScreenGame {
         return this.playerHats.get(playerIndex);
     }
 
-    applyForcesToNGone() {
+    ForcesToNGone() {
 
-        const nGon = this.requireNGon(); 
+        const nGon = this.goat.head.requireBody(); 
 
 
-        nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-10));
+        nGon.setTrueAcceleration(Vector2D.cartesian(0,-10));
 
         let resultantVector = new Vector2D(0, 0);
         this.playerHats.forEach((hat) => {
             if (hat && this.nGon) {
-                const vectorToHat = Vector2D.fromPoints(nGon.body.position, hat.body.position);
+                const vectorToHat = Vector2D.fromPoints(nGon.position, hat.body.position);
                 resultantVector.add(vectorToHat);
             }
         });
 
         resultantVector.normalize()
 
-        nGon.body.applyForce(Vector2D.multiply(resultantVector,3));  // Assuming NGon's body has an applyForce method
+        nGon.applyForce(Vector2D.multiply(resultantVector,4));  // Assuming NGon's body has an applyForce method
 
     }
 
@@ -258,12 +267,13 @@ class MainGame implements SplitScreenGame {
 
         //const nGon = this.requireNGon();
         //nGon.tick(context);  
-        //this.applyForcesToNGone();
+
+        this.ForcesToNGone();
 
 
         const map = this.requireMap()
 
-        map.tick(context, 200);
+        map.tick(context, 50);
 
 
         if (!this.inGame) {
@@ -280,6 +290,7 @@ class MainGame implements SplitScreenGame {
 
 
                 this.inGame ||= nReady > 0 && nReady == context.playerContexts.size;
+                if (this.inGame) this.music?.play();
             }
 
             let pressedA = Array<boolean>(MainGame.MAX_PLAYERS);
@@ -389,11 +400,12 @@ class MainGame implements SplitScreenGame {
         renderer.fill();
     }
 
-    renderCameras(context: SplitScreenGameContext, region: AABB, lag: number) {
+    renderCameras(context: SplitScreenGameContext, region: AABB, lag: number, playerInde1x: number) {
         const renderer = context.getRenderer();
         renderer.strokeStyle = 'black';
         renderer.lineWidth = 0.1;
         context.playerContexts.forEach((playerContext, playerIndex) => {
+            if (playerInde1x === playerIndex) {
             renderer.save();
             const camera = playerContext.camera;
             const translation = camera.position;
@@ -422,6 +434,7 @@ class MainGame implements SplitScreenGame {
             renderer.lineTo(0, 1);*/
             //renderer.stroke();
             renderer.restore();
+            }
         });
     }
 
@@ -616,7 +629,7 @@ class MainGame implements SplitScreenGame {
         }
         else {
             this.renderBackground(context, region, lag);
-            this.renderCameras(context, region, lag);
+            this.renderCameras(context, region, lag, playerIndex);
             this.renderHouse(context, region, lag);
             //this.renderBodies(context, region, lag);
             this.renderContacts(context, region, lag);

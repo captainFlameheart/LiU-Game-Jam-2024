@@ -58,7 +58,7 @@ const targetPoint = Vector2D.cartesian(lastInnerArray[0], lastInnerArray[1]);
                     const distance = Vector2D.distance(playerPosition, targetPoint);
     
                     // Check if the distance is within the threshold
-                    if (distance <= distanceThreshold &&  this.game.isPlayerTouchingBody(i, this.game.requireNGon().body)){
+                    if (distance <= distanceThreshold &&  this.game.isPlayerTouchingBody(i, this.game.goat.head.requireBody())){
                         console.log(`Player ${i} is within ${distanceThreshold} units of the target point.`);
                         this.game.winner = i
                         // Perform further actions as needed
