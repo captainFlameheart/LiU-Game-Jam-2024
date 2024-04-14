@@ -6,7 +6,7 @@ class NGon {
     }
 
     initialize(n: number, radius: number, position: Vector2D) {
-        const material0 = Material.of(0.0, 0.5, 0.0);  // Assuming Material.of creates a material object
+        const material0 = Material.of(0.0, 2, 0.0);  // Assuming Material.of creates a material object
         const vertices = this.generateNGonVertices(n, radius, position);
         this.body = this.createBody(vertices, position, material0);
         this.game.physicsEngine.bodies.push(this.body);
@@ -40,6 +40,22 @@ class NGon {
         body.polygons.push(PhysicalPolygon.of(TransformedConvexPolygon.of(vertices), material));
 
         return body;
+    }
+
+
+    tick(context: SplitScreenGameContext){
+
+        this.body.velocity.x = this.applyDamping(this.body.velocity.x, 0.8, context.getTickDeltaTime());
+        this.body.velocity.y = this.applyDamping(this.body.velocity.y, 0.8, context.getTickDeltaTime());
+
+    }
+
+    applyDamping(initialValue: number, dampingCoefficient: number, deltaTime: number) {
+        // Calculate the damping factor based on time delta squared
+        const dampingFactor = Math.pow(dampingCoefficient, deltaTime);
+
+        // Apply the damping factor to the initial value
+        return initialValue * dampingFactor;
     }
 
 }
