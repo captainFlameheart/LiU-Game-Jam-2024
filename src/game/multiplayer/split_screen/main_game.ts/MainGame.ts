@@ -9,10 +9,14 @@ class MainGame implements SplitScreenGame {
     smackSound: HTMLAudioElement | null;
     music: HTMLAudioElement | null;
     snowImage: ImageBitmap | null;
+
+    winner: number = 5;
       
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
+
+    particleSystem: ParticleSystem;
 
     playerHats: Map<number, Hat> = new Map<number, Hat>();
     snow: Snow[] = [];
@@ -48,6 +52,8 @@ class MainGame implements SplitScreenGame {
         for (let i = 0; i < MainGame.MAX_PLAYERS; i++) {
             this.ready[i] = this.aButtonPressedLast[i] = this.aButtonChanged[i] = false;
         }
+
+        this.particleSystem = new ParticleSystem([]);
     }
 
     static of() {
@@ -106,7 +112,7 @@ class MainGame implements SplitScreenGame {
         this.map = map;
 
         this.nGon = new NGon(this);
-        this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
+        //this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
         return this.loadAssets(context).then(
         ).then(() => {
@@ -209,6 +215,7 @@ class MainGame implements SplitScreenGame {
 
         const nGon = this.requireNGon(); 
 
+
         nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-10));
 
         let resultantVector = new Vector2D(0, 0);
@@ -221,16 +228,20 @@ class MainGame implements SplitScreenGame {
 
         resultantVector.normalize()
 
-        nGon.body.applyForce(Vector2D.multiply(resultantVector,1.5));  // Assuming NGon's body has an applyForce method
+        nGon.body.applyForce(Vector2D.multiply(resultantVector,3));  // Assuming NGon's body has an applyForce method
 
     }
 
     tick(context: SplitScreenGameContext): void {
 
-        const nGon = this.requireNGon();
-        nGon.tick(context);  
-        this.applyForcesToNGone();
+        //const nGon = this.requireNGon();
+        //nGon.tick(context);  
+        //this.applyForcesToNGone();
 
+
+        const map = this.requireMap()
+
+        map.tick(context, 200);
 
 
         if (!this.inGame) {
@@ -273,13 +284,13 @@ class MainGame implements SplitScreenGame {
 
         this.physicsEngine.tick();
 
+        this.particleSystem.tick(context, this);
+
         this.snow.forEach(snow => {
             snow.tick()
         })
 
         const deltaTime = context.getTickDeltaTime();
-
-
 
         context.playerContexts.forEach((playerContext, playerIndex) => {
             const leftThumbstickVector = context.getLeftThumbstickVector(
@@ -309,6 +320,27 @@ class MainGame implements SplitScreenGame {
                 10, -rightThumbstickVector.y * deltaTime
             );
         });
+    }
+
+    isPlayerTouchingBody(playerIndex: number, targetBody: Body): boolean {
+        let hat = this.getHatForPlayer(playerIndex); // Assuming getHatForPlayer returns the hat object
+
+        if (!hat) {
+            return false; // No hat found for the given player
+        }
+
+        let isTouching = false;
+        this.physicsEngine.contactConstraints.forEach((contactConstraint: ContactConstraint, contactKeyString: string) => {
+            const contact_info = ContactKey.fromString(contactKeyString);
+
+            // Check for contact between the hat's body and the target body
+            if ((this.physicsEngine.bodies[contact_info.body0] === hat.body && this.physicsEngine.bodies[contact_info.body1] === targetBody) || 
+                (this.physicsEngine.bodies[contact_info.body1] === hat.body && this.physicsEngine.bodies[contact_info.body0] === targetBody)) {
+                isTouching = true;
+            }
+        });
+
+        return isTouching;
     }
 
     renderBackground(context: SplitScreenGameContext, region: AABB, lag: number) {
@@ -482,7 +514,64 @@ class MainGame implements SplitScreenGame {
         renderer.fillStyle = oldFillStyle;
     }
 
-    
+    renderWinner(context: any, region: { start: { x: number, y: number }, end: { x: number, y: number } }) {
+        if (this.winner !== 5) {  // Check if there is a winner
+            const renderer = context.getRenderer();
+            const oldFillStyle = renderer.fillStyle;
+
+            
+            const x = region.start.x;
+            const y = region.start.y;
+            const w = region.end.x - region.start.x;
+            const h = region.end.y - region.start.y;
+
+            console.log(region)
+
+            // Winner text
+            const winnerText = `Winner is Player ${this.winner}`;
+
+            // Try to fit the winner text in the available width
+            const fontSizes = [72, 36, 28, 14, 12, 10, 5, 2];
+            let textDimensions: TextMetrics;
+            let i = 0;
+            do {
+                renderer.font = `${fontSizes[i++]}px Arial`;  // Incrementally smaller font sizes
+                textDimensions = renderer.measureText(winnerText);
+            } while (textDimensions.width >= w && i < fontSizes.length);
+
+            //renderer.save();
+            //renderer.translate(x, y)
+
+            // Draw background
+            renderer.fillStyle = "#cccccc";
+            renderer.fillRect(x, y, w, h);
+
+            renderer.fillStyle = "#dddddd";
+            renderer.fillRect(x + 1, y + 1, w - 2, h - 2);
+
+            // Draw winner text
+            renderer.fillStyle = "black";
+            const oldTransform = renderer.getTransform();
+            renderer.transform(1, 0, 0, -1, 0, 0);
+
+            
+
+            
+            document.title = winnerText;
+
+            renderer.fillText(winnerText, (w - textDimensions.width) / 2, h / 2 + textDimensions.actualBoundingBoxAscent / 2);
+            renderer.setTransform(oldTransform);
+
+            // Restore the original fill style
+            renderer.fillStyle = oldFillStyle;
+
+            //renderer.restore();
+
+            
+        }
+
+    }
+
     render(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void {
         if(!this.inGame) {
             context.playerContexts.forEach((playerContext, playerIndex, map) => {
@@ -497,6 +586,7 @@ class MainGame implements SplitScreenGame {
             this.renderContacts(context, region, lag);
             this.renderSnow(context, region, lag);
             this.goat.render(context, region, lag, playerIndex);
+            this.renderWinner(context, region)
 
             context.playerContexts.forEach((playerContext, playerIndex, map) => {
                 const hat = this.getHatForPlayer(playerIndex);
@@ -510,6 +600,9 @@ class MainGame implements SplitScreenGame {
 
             this.requireMap().render(context, region, lag, playerIndex);
 
+            this.particleSystem.render(context, region, lag, playerIndex, this);
+
         }
+
     }
 };
