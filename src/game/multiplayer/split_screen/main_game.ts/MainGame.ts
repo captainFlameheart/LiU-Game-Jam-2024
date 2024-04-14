@@ -201,22 +201,22 @@ class MainGame implements SplitScreenGame {
 
     applyForcesToNGone() {
 
-        const nGon = this.requireNGon(); 
+        const nGon = this.goat.head.requireBody(); 
 
 
-        nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-10));
+        nGon.setTrueAcceleration(Vector2D.cartesian(0,-10));
 
         let resultantVector = new Vector2D(0, 0);
         this.playerHats.forEach((hat) => {
             if (hat && this.nGon) {
-                const vectorToHat = Vector2D.fromPoints(nGon.body.position, hat.body.position);
+                const vectorToHat = Vector2D.fromPoints(nGon.position, hat.body.position);
                 resultantVector.add(vectorToHat);
             }
         });
 
         resultantVector.normalize()
 
-        nGon.body.applyForce(Vector2D.multiply(resultantVector,3));  // Assuming NGon's body has an applyForce method
+        nGon.applyForce(Vector2D.multiply(resultantVector,1));  // Assuming NGon's body has an applyForce method
 
     }
 
@@ -224,12 +224,13 @@ class MainGame implements SplitScreenGame {
 
         //const nGon = this.requireNGon();
         //nGon.tick(context);  
-        //this.applyForcesToNGone();
+
+        this.applyForcesToNGone();
 
 
         const map = this.requireMap()
 
-        map.tick(context, 200);
+        map.tick(context, 50);
 
 
         if (!this.inGame) {
