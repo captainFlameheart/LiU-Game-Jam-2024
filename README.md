@@ -7,7 +7,9 @@ This project was developed during the Lithe-kod organized GameJam in spring 2024
 * 4-player Co-op 🌈
 * Physics 🍎
 * Xboc controller support 🎮
-* snow (Blazingly slow)❄️ 
+* snow (Blazingly slow)❄️
+* Audio 🔊
+* Floppy goat 🐐 
 * Blazingly fast💥
 
 
