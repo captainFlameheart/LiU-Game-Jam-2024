@@ -67,7 +67,8 @@ class MainGame implements SplitScreenGame {
     }
 
     initialize(context: SplitScreenGameContext): Promise<void> {
-                
+        
+
         this.nGon = new NGon(this);
         this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
@@ -215,6 +216,7 @@ class MainGame implements SplitScreenGame {
                 this.aButtonPressedLast[i] = pressedA[i];
                 this.hasPlayer ||= true;
             });
+            return;
         }
             
         //console.log(this.ready);
@@ -393,16 +395,26 @@ class MainGame implements SplitScreenGame {
         const w = region.end.x - region.start.x;
         const h = region.end.y - region.start.y;
         
+        const fontSizes = [72, 36, 28, 14, 12, 10, 5, 2]
+        const menuText = "Please hold until all players have joined";
+
+        let textDimensions: TextMetrics;
+        let i = 0;
+        do {
+            renderer.font = fontSizes[i++] + 'px Arial';
+            textDimensions = renderer.measureText(menuText);
+        } while (textDimensions.width >= w);
+        
         renderer.fillStyle = "#cccccc";
         renderer.fillRect(x, y, w, h);
 
-        renderer.fillStyle = "rgba(255,255,255,128)";
+        renderer.fillStyle = "#dddddd";
         renderer.fillRect(x + 1, y + 1, w - 2, h - 2);
         
         renderer.fillStyle = "black";
         const oldTransform = renderer.getTransform();
         renderer.transform(1, 0, 0, -1,0, 0);
-        renderer.fillText("Plz hold \ncontroller", (2*x + w)/2, (2*y +h)/2, 0.8*h);
+        renderer.fillText(menuText, x + (w-textDimensions.width)/2, y + h/2);
         renderer.setTransform(oldTransform)
         renderer.fillStyle = oldFillStyle;
     }
