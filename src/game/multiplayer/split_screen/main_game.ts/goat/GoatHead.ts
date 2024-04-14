@@ -30,10 +30,11 @@ class GoatHead {
                     Vector2D.cartesian(100 * Goat.IMAGE_SCALE, -300 * Goat.IMAGE_SCALE), 
                     Vector2D.cartesian(200 * Goat.IMAGE_SCALE, -200 * Goat.IMAGE_SCALE)
                 ]), Material.of(bounciness, friction, tangentSpeed), 
-                Goat.COLLISION_CATEGORY, Goat.COLLIDABLE_CATEGORIES
+                Goat.UPPER_GOAT_COLLISION_CATEGORY, Goat.UPPER_GOAT_COLLIDABLE_CATEGORIES
             ));
 
-            this.body.angularLightness = 10;
+            this.body.lightness = 100;
+            this.body.angularLightness = 100;
             this.body.setTrueAcceleration(Vector2D.cartesian(0, -9.81));
             game.physicsEngine.bodies.push(this.body);
         });

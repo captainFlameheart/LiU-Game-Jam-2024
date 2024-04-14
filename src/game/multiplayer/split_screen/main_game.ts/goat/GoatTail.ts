@@ -28,7 +28,7 @@ class GoatTail {
                     Vector2D.cartesian(-100 * Goat.IMAGE_SCALE, -100 * Goat.IMAGE_SCALE), 
                     Vector2D.cartesian(100 * Goat.IMAGE_SCALE, -100 * Goat.IMAGE_SCALE),
                 ]), Material.of(bounciness, friction, tangentSpeed), 
-                Goat.COLLISION_CATEGORY, Goat.COLLIDABLE_CATEGORIES
+                Goat.UPPER_GOAT_COLLISION_CATEGORY, Goat.UPPER_GOAT_COLLIDABLE_CATEGORIES
             ));
 
             this.body.angularLightness = 10;

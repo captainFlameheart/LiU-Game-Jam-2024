@@ -61,6 +61,10 @@ class Body {
         );
     }
 
+    localToDisplacement(localVector: Vector2D): Vector2D {
+        return Vector2D.rotate(localVector, this.angle);
+    }
+
     globalPointToDisplacement(globalPoint: Vector2D) {
         return Vector2D.subtract(globalPoint, this.position);
     }

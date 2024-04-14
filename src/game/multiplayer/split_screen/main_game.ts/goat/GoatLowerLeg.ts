@@ -13,7 +13,10 @@ class GoatLowerLeg {
         return new GoatLowerLeg(image, body);
     }
 
-    initialize(game: MainGame, context: SplitScreenGameContext): Promise<void> {
+    initialize(
+        game: MainGame, context: SplitScreenGameContext, 
+        collisionCategory: number, collidableCategories: number
+    ): Promise<void> {
         return loadImage('../images/goat_lower_leg.png').then(image => {
             this.image = image;
         }).then(() => {
@@ -28,10 +31,11 @@ class GoatLowerLeg {
                     Vector2D.cartesian(-100 * Goat.IMAGE_SCALE, -150 * Goat.IMAGE_SCALE), 
                     Vector2D.cartesian(100 * Goat.IMAGE_SCALE, -150 * Goat.IMAGE_SCALE),
                 ]), Material.of(bounciness, friction, tangentSpeed), 
-                Goat.COLLISION_CATEGORY, Goat.COLLIDABLE_CATEGORIES
+                collisionCategory, collidableCategories
             ));
 
-            this.body.angularLightness = 10;
+            this.body.angularLightness = 100;
+            this.body.lightness = 100;
 
             this.body.setTrueAcceleration(Vector2D.cartesian(0, -9.81));
             game.physicsEngine.bodies.push(this.body);
