@@ -24,6 +24,9 @@ class MainGame implements SplitScreenGame {
     nGon: NGon|null;
     map: MountainMap|null;
 
+    mountain1Image: ImageBitmap | null;
+    mountain2Image: ImageBitmap | null;
+
     ready: Array<boolean> = Array(MainGame.MAX_PLAYERS);
     
     aButtonPressedLast: Array<boolean> = Array(MainGame.MAX_PLAYERS);
@@ -39,6 +42,8 @@ class MainGame implements SplitScreenGame {
         goatScream: HTMLAudioElement | null, smackSound: HTMLAudioElement | null,
         goat: Goat, snowImage: ImageBitmap | null
     ) {
+        this.mountain1Image = null;
+        this.mountain2Image = null;
         this.map = null;
         this.nGon = null;
         this.physicsEngine = physicsEngine;
@@ -81,7 +86,32 @@ class MainGame implements SplitScreenGame {
           this.smackSound = smackSound;
         });
 
-        return Promise.all([promised_hat, promised_snow, promised_goat_scream, promised_smack]).then();
+        const mountain1Promise = loadImage('../images/mountains1.png').then((image) => {
+            this.mountain1Image = image;
+        });
+        const mountain2Promise = loadImage('../images/mountains2.png').then((image) => {
+            this.mountain2Image = image;
+        });
+
+        return Promise.all([
+            promised_hat, promised_snow, promised_goat_scream, promised_smack, 
+            mountain1Promise, mountain2Promise
+        ]).then();
+    }
+
+    requireMountain1Image() {
+        if (this.mountain1Image === null) {
+            throw new Error('Mountain 1');
+        }
+        return this.mountain1Image;
+    }
+
+    
+    requireMountain2Image() {
+        if (this.mountain2Image === null) {
+            throw new Error('Mountain 1');
+        }
+        return this.mountain2Image;
     }
 
 
@@ -367,14 +397,29 @@ class MainGame implements SplitScreenGame {
             renderer.save();
             const camera = playerContext.camera;
             const translation = camera.position;
-            const scale = 0.1 * camera.scale;
+
+            renderer.save();
+            const image2 = this.requireMountain2Image();
+            const mountain2Scale = 0.0004 * camera.scale;
             renderer.translate(translation.x, translation.y);
-            renderer.scale(scale, scale);
+            renderer.scale(mountain2Scale, -mountain2Scale);
             renderer.beginPath();
-            renderer.moveTo(-1, 0);
+            //renderer.drawImage(image2, -0.5 * image2.width, -0.5 * image2.height);
+            renderer.restore();
+
+            renderer.save();
+            const image1 = this.requireMountain1Image();
+            const mountain1Scale = 0.0004 * camera.scale;
+            renderer.translate(translation.x, translation.y);
+            renderer.scale(mountain1Scale, -mountain1Scale);
+            renderer.beginPath();
+            renderer.drawImage(image1, -0.5 * image1.width, -0.5 * image1.height);
+            renderer.restore();
+            //renderer.drawImage()
+            /*renderer.moveTo(-1, 0);
             renderer.lineTo(1, 0);
             renderer.moveTo(0, -1);
-            renderer.lineTo(0, 1);
+            renderer.lineTo(0, 1);*/
             //renderer.stroke();
             renderer.restore();
         });
@@ -571,8 +616,8 @@ class MainGame implements SplitScreenGame {
         }
         else {
             this.renderBackground(context, region, lag);
-            this.renderHouse(context, region, lag);
             this.renderCameras(context, region, lag);
+            this.renderHouse(context, region, lag);
             //this.renderBodies(context, region, lag);
             this.renderContacts(context, region, lag);
             this.renderSnow(context, region, lag);
