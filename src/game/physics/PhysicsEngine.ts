@@ -86,14 +86,23 @@ class PhysicsEngine {
     }
 
     updateContactConstraintsBetweenBodies(body0Index: number, body1Index: number) {
-        const polygonCount0 = this.bodies[body0Index].polygons.length;
-        const polygonCount1 = this.bodies[body1Index].polygons.length;
+        const body0 = this.bodies[body0Index];
+        const body1 = this.bodies[body1Index];
+        const polygonCount0 = body0.polygons.length;
+        const polygonCount1 = body1.polygons.length;
         for (let polygon0Index = 0; polygon0Index < polygonCount0; polygon0Index++) {
+            const polygon0 = body0.polygons[polygon0Index];
             for (let polygon1Index = 0; polygon1Index < polygonCount1; polygon1Index++) {
-                this.updateContactConstraintsBetweenPolygons(
-                    body0Index, polygon0Index, 
-                    body1Index, polygon1Index
-                );
+                const polygon1 = body1.polygons[polygon1Index];
+                if (
+                    (polygon0.collidableCategories & polygon1.categories) && 
+                    (polygon1.collidableCategories & polygon0.categories)
+                ) {
+                    this.updateContactConstraintsBetweenPolygons(
+                        body0Index, polygon0Index, 
+                        body1Index, polygon1Index
+                    );
+                }
             }
         }
     }
@@ -127,7 +136,6 @@ class PhysicsEngine {
 
             const material0 = polygon0.material;
             const material1 = polygon1.material;
-            
             
             const bounciness = Math.max(material0.bounciness, material1.bounciness)
             
