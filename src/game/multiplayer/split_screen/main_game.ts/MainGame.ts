@@ -3,7 +3,8 @@ class MainGame implements SplitScreenGame {
     static MAX_PLAYERS: number = 4;
 
     hatImage: ImageBitmap | null;
-
+    goatScream: HTMLAudioElement | null;
+      
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
@@ -21,24 +22,32 @@ class MainGame implements SplitScreenGame {
 
     constructor(
         physicsEngine: PhysicsEngine, hatImage: ImageBitmap | null, 
-        goat: Goat
+        goatScream: HTMLAudioElement | null, goat: Goat
     ) {
         this.nGon = null;
         this.physicsEngine = physicsEngine;
         this.hatImage = hatImage;
+        this.goatScream = goatScream;
         this.goat = goat;
     }
 
     static of() {
         const hatImage = null;
+        const goatScream = null;
         const goat = Goat.of();
-        return new MainGame(PhysicsEngine.of(), hatImage, goat);
+        return new MainGame(PhysicsEngine.of(), hatImage, goatScream, goat);
     }
 
-    loadAssets(context: SplitScreenGameContext): Promise<void> {
-        return loadImage('../images/hat.png').then(hatImage => {
+    loadAssets(context: SplitScreenGameContext): Promise<(ImageBitmap | HTMLAudioElement)[]> {
+        const promised_hat: Promise<any> = loadImage('../images/hat.png').then(hatImage => {
             this.hatImage = hatImage;
         });
+
+        const promised_goat_scream: Promise<any> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
+            this.goatScream = goatScream;
+        }) 
+
+        return Promise.all([promised_hat, promised_goat_scream]);
     }
 
 
