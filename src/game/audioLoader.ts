@@ -1,9 +1,11 @@
 function loadAudio(path: string): Promise<HTMLAudioElement> {
-    return new Promise(resolve => {
-        var audio = new Audio();
-        audio.onload = function () {
+    return new Promise(
+      (resolve, reject) => {
+        var audio = new Audio(path);
+        audio.addEventListener(
+          "loadeddata", 
+          function () {
             resolve(audio);
-        };
-        audio.src = path;
-    });
+          });
+      });
 }

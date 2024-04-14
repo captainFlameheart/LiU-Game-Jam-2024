@@ -60,11 +60,11 @@ class MainGame implements SplitScreenGame {
             }
         );
 
-        // const promised_goat_scream: Promise<void | HTMLAudioElement> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
-        //     this.goatScream = goatScream;
-        // });
+        const promised_goat_scream: Promise<void | HTMLAudioElement> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
+          this.goatScream = goatScream;
+        });
 
-        return Promise.all([promised_hat, promised_snow]).then();
+        return Promise.all([promised_hat, promised_snow, promised_goat_scream]).then();
     }
 
 
@@ -203,6 +203,7 @@ class MainGame implements SplitScreenGame {
 
 
         if (!this.inGame) {
+            this.goatScream?.play();
 
             const anyAReleased = this.aButtonChanged.reduce((prev, current, i) => {
                 return prev || (current && !context.aButtonPressed(i));
@@ -214,7 +215,8 @@ class MainGame implements SplitScreenGame {
                     this.ready[i] ||= !context.aButtonPressed(i);
                     nReady += Number(this.ready[i]);
                 });
-                
+
+
                 this.inGame ||= nReady > 0 && nReady == context.playerContexts.size;
             }
 
