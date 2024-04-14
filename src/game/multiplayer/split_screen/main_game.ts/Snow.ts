@@ -1,5 +1,5 @@
 class Snow {
-    img: HTMLImageElement = new Image();
+    img: ImageBitmap | null = null;
     position: Vector2D;
     rotation: number = 0;
     sway: number = 4; // Amplitude
@@ -10,18 +10,18 @@ class Snow {
     context: SplitScreenGameContext | null = null;
 
     constructor() {
-        this.img.src = "../images/edvard.png";
         this.position = Vector2D.zero();
 
     }
 
-    static letItSnow(context: SplitScreenGameContext, sway: number, pizzazz: number, hurry: number, scale: number) {
+    static letItSnow(context: SplitScreenGameContext, sway: number, pizzazz: number, hurry: number, scale: number, snowImage: ImageBitmap) {
         let snow = new Snow();
         snow.context = context;
         snow.sway = sway;
         snow.pizzazz = pizzazz;
         snow.hurry = hurry;
         snow.scale = scale;
+        snow.img = snowImage;
         return snow;
     }
 
@@ -34,7 +34,7 @@ class Snow {
 
     render(context: SplitScreenGameContext, region: AABB, lag: number) {
         const render = context.getRenderer();
-        const pattern = render.createPattern(this.img, "repeat");
+        const pattern = render.createPattern(this.img as ImageBitmap, "repeat");
         const size = region.computeSize();
         if (pattern === null) return;
         

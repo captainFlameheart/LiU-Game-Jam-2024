@@ -1,9 +1,14 @@
+
+
 class MainGame implements SplitScreenGame {
     static THUMBSTICK_DEAD_ZONE = 0.1;
     static MAX_PLAYERS: number = 4;
 
     hatImage: ImageBitmap | null;
-
+    goatScream: HTMLAudioElement | null;
+    smackSound: HTMLAudioElement | null;
+    snowImage: ImageBitmap | null;
+      
     physicsEngine: PhysicsEngine;
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
@@ -12,33 +17,64 @@ class MainGame implements SplitScreenGame {
     snow: Snow[] = [];
 
     goat: Goat;
+    nGon: NGon|null;
 
     ready: Array<boolean> = Array(MainGame.MAX_PLAYERS);
+    
+    aButtonPressedLast: Array<boolean> = Array(MainGame.MAX_PLAYERS);
+    aButtonChanged: Array<boolean> = Array(MainGame.MAX_PLAYERS);
+    bButtonPressedLast: Array<boolean> = Array(MainGame.MAX_PLAYERS);
+    bButtonChanged: Array<boolean> = Array(MainGame.MAX_PLAYERS);
 
-    inGame: boolean = true;
-
-    nGon: NGon|null;
+    hasPlayer: boolean = false;
+    inGame: boolean = false;
 
     constructor(
         physicsEngine: PhysicsEngine, hatImage: ImageBitmap | null, 
-        goat: Goat
+        goatScream: HTMLAudioElement | null, smackSound: HTMLAudioElement | null,
+        goat: Goat, snowImage: ImageBitmap | null
     ) {
         this.nGon = null;
         this.physicsEngine = physicsEngine;
         this.hatImage = hatImage;
+        this.goatScream = goatScream;
+        this.smackSound = smackSound;
         this.goat = goat;
+        this.snowImage = snowImage
+        for (let i = 0; i < MainGame.MAX_PLAYERS; i++) {
+            this.ready[i] = this.aButtonPressedLast[i] = this.aButtonChanged[i] = false;
+        }
     }
 
     static of() {
         const hatImage = null;
+        const goatScream = null;
+        const smackSound = null;
+        const snowImage = null;
         const goat = Goat.of();
-        return new MainGame(PhysicsEngine.of(), hatImage, goat);
+        return new MainGame(PhysicsEngine.of(), hatImage, goatScream, smackSound, goat, snowImage);
     }
 
     loadAssets(context: SplitScreenGameContext): Promise<void> {
-        return loadImage('../images/hat.png').then(hatImage => {
+        const promised_hat: Promise<void | ImageBitmap> = loadImage('../images/hat.png').then(hatImage => {
             this.hatImage = hatImage;
         });
+
+        const promised_snow: Promise<void | ImageBitmap> = loadImage('../images/edvard.png').then(
+            snowImage => {
+                this.snowImage = snowImage;
+            }
+        );
+
+        const promised_goat_scream: Promise<void | HTMLAudioElement> = loadAudio('../audio/goat_scream.wav').then(goatScream => {
+          this.goatScream = goatScream;
+        });
+
+        const promised_smack: Promise<void | HTMLAudioElement> = loadAudio('../audio/smack.wav').then(smackSound => {
+          this.smackSound = smackSound;
+        });
+
+        return Promise.all([promised_hat, promised_snow, promised_goat_scream, promised_smack]).then();
     }
 
 
@@ -50,7 +86,11 @@ class MainGame implements SplitScreenGame {
     }
 
     initialize(context: SplitScreenGameContext): Promise<void> {
-                
+
+        const map = new MountainMap("", this);
+
+
+
         this.nGon = new NGon(this);
         this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
@@ -73,8 +113,8 @@ class MainGame implements SplitScreenGame {
                 Vector2D.cartesian(-1, -1), 
             ];
 
-        this.snow.push(Snow.letItSnow(context, 2, 0.1, 3, 0.5))
-        this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1))
+        this.snow.push(Snow.letItSnow(context, 2, 0.1, 3, 0.5, this.snowImage as ImageBitmap))
+        this.snow.push(Snow.letItSnow(context, 3, 0.1, 5, 1, this.snowImage as ImageBitmap))
         //this.snow.push(Snow.letItSnow(context, 1, 0.1, 1, 0.75))    
         
 
@@ -97,7 +137,7 @@ class MainGame implements SplitScreenGame {
                 TransformedConvexPolygon.of(localPolygon0), 
                 material0
             ));
-            this.physicsEngine.bodies.push(body1);
+            //this.physicsEngine.bodies.push(body1);
         });
     }
 
@@ -123,7 +163,6 @@ class MainGame implements SplitScreenGame {
     playerConnected(context: SplitScreenGameContext, index: number): void {
         console.log(`Player ${index} connected!`);
         context.getPlayerContext(index).camera.scale = 10;
-
 
         const newHat = new Hat(this, index);
         newHat.initialize(1, 1.3, 0, 0);  // Parameters can be adjusted as needed
@@ -152,7 +191,7 @@ class MainGame implements SplitScreenGame {
 
         const nGon = this.requireNGon(); 
 
-        nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-2));
+        nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-10));
 
         let resultantVector = new Vector2D(0, 0);
         this.playerHats.forEach((hat) => {
@@ -163,9 +202,9 @@ class MainGame implements SplitScreenGame {
         });
 
         resultantVector.normalize()
-        console.log(resultantVector)
+
         nGon.body.applyForce(Vector2D.multiply(resultantVector,1.5));  // Assuming NGon's body has an applyForce method
-        console.log('Applied force to NGon:', resultantVector);
+
     }
 
     tick(context: SplitScreenGameContext): void {
@@ -174,14 +213,41 @@ class MainGame implements SplitScreenGame {
         nGon.tick(context);  
         this.applyForcesToNGone();
 
-        context.playerContexts.forEach((playerContext, i, map) => {
-            this.ready[i] ||= context.aButtonPressed(i);
-            this.ready[i] &&= context.bButtonPressed(i);
-        });
+
+
+        if (!this.inGame) {
+            this.goatScream?.play();
+
+            const anyAReleased = this.aButtonChanged.reduce((prev, current, i) => {
+                return prev || (current && !context.aButtonPressed(i));
+            }, false);
+            if (this.hasPlayer && anyAReleased) {
+                let nReady = 0;
+                console.log(context.playerContexts.size, this.aButtonChanged);
+                context.playerContexts.forEach((playerContext, i) => {
+                    this.ready[i] ||= !context.aButtonPressed(i);
+                    nReady += Number(this.ready[i]);
+                });
+
+
+                this.inGame ||= nReady > 0 && nReady == context.playerContexts.size;
+            }
+
+            let pressedA = Array<boolean>(MainGame.MAX_PLAYERS);
+            context.playerContexts.forEach((playerContext, i) => {
+                pressedA[i] = context.aButtonPressed(i);
+                this.aButtonChanged[i] = this.aButtonPressedLast[i] != pressedA[i];
+                this.aButtonPressedLast[i] = pressedA[i];
+                this.hasPlayer ||= true;
+            });
+            return;
+        }
+            
+        //console.log(this.ready);
 
         const currentTime = Date.now();
         if (currentTime - this.frameRateMeasurementStartTime >= 1000) {
-            console.log(`fps: this.count`);
+            //console.log(`fps: this.count`);
             this.frameRateMeasurmentCounter = 0;
             this.frameRateMeasurementStartTime = currentTime;
         } else {
@@ -348,13 +414,32 @@ class MainGame implements SplitScreenGame {
     renderLobby(context: SplitScreenGameContext, region: AABB, lag: number, playerIndex: number): void {
         const renderer = context.getRenderer();
         const oldFillStyle = renderer.fillStyle;
-        renderer.fillStyle = "#ffff00";
-        renderer.fillRect(
-            region.start.x + 1,
-            region.start.y + 1, 
-            region.end.x - region.start.x - 1,
-            region.end.y - region.start.y - 1
-        );
+        const x = region.start.x;
+        const y = region.start.y;
+        const w = region.end.x - region.start.x;
+        const h = region.end.y - region.start.y;
+        
+        const fontSizes = [72, 36, 28, 14, 12, 10, 5, 2]
+        const menuText = "Please hold until all players have joined";
+
+        let textDimensions: TextMetrics;
+        let i = 0;
+        do {
+            renderer.font = fontSizes[i++] + 'px Arial';
+            textDimensions = renderer.measureText(menuText);
+        } while (textDimensions.width >= w);
+        
+        renderer.fillStyle = "#cccccc";
+        renderer.fillRect(x, y, w, h);
+
+        renderer.fillStyle = "#dddddd";
+        renderer.fillRect(x + 1, y + 1, w - 2, h - 2);
+        
+        renderer.fillStyle = "black";
+        const oldTransform = renderer.getTransform();
+        renderer.transform(1, 0, 0, -1,0, 0);
+        renderer.fillText(menuText, x + (w-textDimensions.width)/2, y + h/2);
+        renderer.setTransform(oldTransform)
         renderer.fillStyle = oldFillStyle;
     }
 

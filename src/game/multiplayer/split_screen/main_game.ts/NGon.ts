@@ -6,7 +6,7 @@ class NGon {
     }
 
     initialize(n: number, radius: number, position: Vector2D) {
-        const material0 = Material.of(0.0, 2, 0.0);  // Assuming Material.of creates a material object
+        const material0 = Material.of(0.0, 0.7, 0.0);  // Assuming Material.of creates a material object
         const vertices = this.generateNGonVertices(n, radius, position);
         this.body = this.createBody(vertices, position, material0);
         this.game.physicsEngine.bodies.push(this.body);
@@ -31,6 +31,7 @@ class NGon {
         body.setTrueVelocity(new Vector2D(0, 0));  // Default velocity
         body.setTrueAcceleration(Vector2D.cartesian(0, -1))
         body.angularLightness = 10;  // Example property
+        body.lightness = 2;
         body.angle = Math.PI;  // Example property
 
         if (!isCounterClockwise(vertices)) {
