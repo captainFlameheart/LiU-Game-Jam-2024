@@ -100,7 +100,7 @@ class MainGame implements SplitScreenGame {
         this.map = map;
 
         this.nGon = new NGon(this);
-        this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
+        //this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
         return this.loadAssets(context).then(
         ).then(() => {
@@ -203,6 +203,7 @@ class MainGame implements SplitScreenGame {
 
         const nGon = this.requireNGon(); 
 
+
         nGon.body.setTrueAcceleration(Vector2D.cartesian(0,-10));
 
         let resultantVector = new Vector2D(0, 0);
@@ -221,9 +222,9 @@ class MainGame implements SplitScreenGame {
 
     tick(context: SplitScreenGameContext): void {
 
-        const nGon = this.requireNGon();
-        nGon.tick(context);  
-        this.applyForcesToNGone();
+        //const nGon = this.requireNGon();
+        //nGon.tick(context);  
+        //this.applyForcesToNGone();
 
 
         const map = this.requireMap()

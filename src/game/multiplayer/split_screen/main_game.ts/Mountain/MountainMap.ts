@@ -9,7 +9,7 @@ class MountainMap {
 
     constructor(filePath: string, game: MainGame) {
         this.game = game;
-        this.material0 = Material.of(0, 0.7, 0.0);
+        this.material0 = Material.of(0, 0.3, 0.0);
         this.body = null;
         this.loadMountains(filePath).then(() => {
             console.log('Mountains loaded successfully.');
@@ -74,7 +74,7 @@ const targetPoint = Vector2D.cartesian(lastInnerArray[0], lastInnerArray[1]);
         perp.normalize()
         perp = Vector2D.multiply(perp, thickness / 2) 
 
-        // Define the rectangle's vertices
+        // Define the rectangle's verticesapp
         const pointsVector =[
             Vector2D.add(p1, perp),
             Vector2D.add(p2, perp),
