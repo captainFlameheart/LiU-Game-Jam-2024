@@ -64,14 +64,14 @@ class MainGame implements SplitScreenGame {
         this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
 
         return this.loadAssets(context).then(
-            () => this.goat.initialize(this, context)
         ).then(() => {
             this.physicsEngine.setDeltaTime(context.getTickDeltaTime());
+            this.goat.initialize(this, context)
             
             const material0 = Material.of(0.0, 0.3, 0.0);
             const localPolygon0 = [
                 //Vector2D.cartesian(1, 1), 
-                Vector2D.cartesian(-1, 1), 
+                Vector2D.cartesian(-1, 0), 
                 Vector2D.cartesian(-10, -10), 
                 Vector2D.cartesian(100, -100),
                 Vector2D.cartesian(2, -1)

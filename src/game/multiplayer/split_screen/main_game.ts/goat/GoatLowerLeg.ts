@@ -1,6 +1,4 @@
-class GoatUpperLeg {
-    static IMAGE_SCALE = 0.001;
-
+class GoatLowerLeg {
     image: ImageBitmap | null;
     body: Body | null;
 
@@ -12,11 +10,11 @@ class GoatUpperLeg {
     static of() {
         const image = null;
         const body = null;
-        return new GoatUpperLeg(image, body);
+        return new GoatLowerLeg(image, body);
     }
 
     initialize(game: MainGame, context: SplitScreenGameContext): Promise<void> {
-        return loadImage('../images/goat_upper_leg.png').then(image => {
+        return loadImage('../images/goat_lower_leg.png').then(image => {
             this.image = image;
         }).then(() => {
             this.body = Body.of(game.physicsEngine);
@@ -29,7 +27,7 @@ class GoatUpperLeg {
                     Vector2D.cartesian(-100 * Goat.IMAGE_SCALE, 150 * Goat.IMAGE_SCALE), 
                     Vector2D.cartesian(-100 * Goat.IMAGE_SCALE, -150 * Goat.IMAGE_SCALE), 
                     Vector2D.cartesian(100 * Goat.IMAGE_SCALE, -150 * Goat.IMAGE_SCALE),
-                ]), Material.of(bounciness, friction, tangentSpeed),
+                ]), Material.of(bounciness, friction, tangentSpeed), 
                 Goat.COLLISION_CATEGORY, Goat.COLLIDABLE_CATEGORIES
             ));
 

@@ -1,6 +1,4 @@
 class GoatBody {
-    static IMAGE_SCALE = 0.001;
-
     image: ImageBitmap | null;
     body: Body | null;
 
@@ -23,18 +21,19 @@ class GoatBody {
             const bounciness = 0;
             const friction = 0.5;
             const tangentSpeed = 0;
-            this.body.polygons.push(PhysicalPolygon.of(
+            this.body.polygons.push(PhysicalPolygon.withCollisionFiltering(
                 TransformedConvexPolygon.of([
-                    Vector2D.cartesian(250 * GoatHead.IMAGE_SCALE, 150 * GoatHead.IMAGE_SCALE), 
-                    Vector2D.cartesian(-250 * GoatHead.IMAGE_SCALE, 150 * GoatHead.IMAGE_SCALE), 
-                    Vector2D.cartesian(-250 * GoatHead.IMAGE_SCALE, -150 * GoatHead.IMAGE_SCALE), 
-                    Vector2D.cartesian(250 * GoatHead.IMAGE_SCALE, -150 * GoatHead.IMAGE_SCALE),
-                ]), Material.of(bounciness, friction, tangentSpeed)
+                    Vector2D.cartesian(250 * Goat.IMAGE_SCALE, 150 * Goat.IMAGE_SCALE), 
+                    Vector2D.cartesian(-250 * Goat.IMAGE_SCALE, 150 * Goat.IMAGE_SCALE), 
+                    Vector2D.cartesian(-250 * Goat.IMAGE_SCALE, -150 * Goat.IMAGE_SCALE), 
+                    Vector2D.cartesian(250 * Goat.IMAGE_SCALE, -150 * Goat.IMAGE_SCALE),
+                ]), Material.of(bounciness, friction, tangentSpeed), 
+                Goat.COLLISION_CATEGORY, Goat.COLLIDABLE_CATEGORIES
             ));
 
             this.body.angularLightness = 10;
 
-            //this.body.setTrueAcceleration(Vector2D.cartesian(0, -9.81));
+            this.body.setTrueAcceleration(Vector2D.cartesian(0, -9.81));
             game.physicsEngine.bodies.push(this.body);
         });
     }
@@ -60,7 +59,7 @@ class GoatBody {
         const position = body.position;
         renderer.translate(position.x, position.y);
         renderer.rotate(body.angle);
-        renderer.scale(GoatHead.IMAGE_SCALE, -GoatHead.IMAGE_SCALE);
+        renderer.scale(Goat.IMAGE_SCALE, -Goat.IMAGE_SCALE);
         const image = this.requireImage();
         renderer.drawImage(image, -0.5 * image.width, -0.5 * image.height);
         renderer.restore();

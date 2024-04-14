@@ -1,5 +1,5 @@
 interface Game {
-    initialize(context: GameContext): Promise<null>;
+    initialize(context: GameContext): Promise<void>;
 
     deltaTimeChanged(context: GameContext): void;
 
