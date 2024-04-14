@@ -30,6 +30,9 @@ class Vector2D {
     static add(vector0: Vector2D, vector1: Vector2D) {
         return new Vector2D(vector0.x + vector1.x, vector0.y + vector1.y);
     }
+    static distance(a: Vector2D, b: Vector2D): number {
+        return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+    }
 
     static addMultiplied(vector0: Vector2D, vector1: Vector2D, scalar: number) {
         return new Vector2D(

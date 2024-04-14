@@ -18,6 +18,7 @@ class MainGame implements SplitScreenGame {
 
     goat: Goat;
     nGon: NGon|null;
+    map: MountainMap|null;
 
     ready: Array<boolean> = Array(MainGame.MAX_PLAYERS);
     
@@ -34,6 +35,7 @@ class MainGame implements SplitScreenGame {
         goatScream: HTMLAudioElement | null, smackSound: HTMLAudioElement | null,
         goat: Goat, snowImage: ImageBitmap | null
     ) {
+        this.map = null;
         this.nGon = null;
         this.physicsEngine = physicsEngine;
         this.hatImage = hatImage;
@@ -84,12 +86,17 @@ class MainGame implements SplitScreenGame {
         }
         return this.nGon;
     }
+    requireMap(){
+        if (this.map === null){
+            throw new Error("map is null");
+        }
+        return this.map;
+    }
 
     initialize(context: SplitScreenGameContext): Promise<void> {
 
         const map = new MountainMap("", this);
-
-
+        this.map = map;
 
         this.nGon = new NGon(this);
         this.nGon.initialize(5, 0.2, new Vector2D(0, 0));
@@ -146,6 +153,10 @@ class MainGame implements SplitScreenGame {
             throw new Error('Hat image is null');
         }
         return this.hatImage;
+    }
+
+    getMaxPlayers(context: SplitScreenGameContext ) {
+        return context.playerContexts.size
     }
 
     deltaTimeChanged(context: SplitScreenGameContext): void {

@@ -31,7 +31,7 @@ class NGon {
         body.setTrueVelocity(new Vector2D(0, 0));  // Default velocity
         body.setTrueAcceleration(Vector2D.cartesian(0, -1))
         body.angularLightness = 10;  // Example property
-        body.lightness = 2;
+        body.lightness = 3;
         body.angle = Math.PI;  // Example property
 
         if (!isCounterClockwise(vertices)) {

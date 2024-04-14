@@ -148,6 +148,9 @@ class Hat {
         hat_bottom.setTrueVelocity(Vector2D.cartesian(0, 0));
         hat_bottom.angularLightness = 10;
         hat_bottom.angle = Math.PI;
+        
+        const material1 = Material.of(0, 1, 1.0);
+        const material2 = Material.of(0, 1, -1.0);
 
         // Verify each polygon's order and correct if necessary
         polygons.forEach((polygon, index) => {
@@ -155,7 +158,16 @@ class Hat {
                 // console.log(`Correcting polygon at index ${index} to counterclockwise order.`);
                 polygon = reversePoints(polygon);
             }
-            hat_bottom.polygons.push(PhysicalPolygon.of(TransformedConvexPolygon.of(polygon), material0));
+
+            if (index === 3){
+                hat_bottom.polygons.push(PhysicalPolygon.of(TransformedConvexPolygon.of(polygon), material2));
+            }
+            else if(index === 4){
+                hat_bottom.polygons.push(PhysicalPolygon.of(TransformedConvexPolygon.of(polygon), material1));
+            }
+            else {
+                hat_bottom.polygons.push(PhysicalPolygon.of(TransformedConvexPolygon.of(polygon), material0));
+            }
         });
 
         this.game.physicsEngine.bodies.push(hat_bottom);
@@ -227,11 +239,13 @@ class Hat {
         if (context.aButtonPressed(this.player_index)) {
             this.game.physicsEngine.contactConstraints.forEach((contactConstraint: ContactConstraint, contactKeyString: string) => {
                 const contact_info = ContactKey.fromString(contactKeyString);
+                const map = this.game.requireMap()
 
 
                 // Check if either of the bodies in the contact is the hat's body
-                if (this.game.physicsEngine.bodies[contact_info.body0] === this.body || this.game.physicsEngine.bodies[contact_info.body1] === this.body) {
-                    this.body.applyTureImpulse(Vector2D.cartesian(0, 2))
+                if ((this.game.physicsEngine.bodies[contact_info.body0] === this.body && this.game.physicsEngine.bodies[contact_info.body1] === map.body) || 
+                    (this.game.physicsEngine.bodies[contact_info.body1] === this.body && this.game.physicsEngine.bodies[contact_info.body0] === map.body)) {
+                    this.body.applyTureImpulse(Vector2D.cartesian(0, 3))
                 }
             });
         }
