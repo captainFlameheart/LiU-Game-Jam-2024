@@ -22,3 +22,8 @@ This project was developed during the Lithe-kod organized GameJam in spring 2024
 * Gustav(inte sörnäs) Arneving 🫀[Emotional support engineer]
 * Morgan Nordberg 🎨[Art director/ Game assets engineer] (Gustav also did some art)
 
+# Music
+
+"Spazzmatica Polka" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
