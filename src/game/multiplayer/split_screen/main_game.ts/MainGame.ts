@@ -13,6 +13,8 @@ class MainGame implements SplitScreenGame {
     frameRateMeasurementStartTime: number = Date.now();
     frameRateMeasurmentCounter: number = 0;
 
+    particleSystem: ParticleSystem;
+
     playerHats: Map<number, Hat> = new Map<number, Hat>();
     snow: Snow[] = [];
 
@@ -46,6 +48,8 @@ class MainGame implements SplitScreenGame {
         for (let i = 0; i < MainGame.MAX_PLAYERS; i++) {
             this.ready[i] = this.aButtonPressedLast[i] = this.aButtonChanged[i] = false;
         }
+
+        this.particleSystem = new ParticleSystem([]);
     }
 
     static of() {
@@ -267,13 +271,13 @@ class MainGame implements SplitScreenGame {
 
         this.physicsEngine.tick();
 
+        this.particleSystem.tick(context, this);
+
         this.snow.forEach(snow => {
             snow.tick()
         })
 
         const deltaTime = context.getTickDeltaTime();
-
-
 
         context.playerContexts.forEach((playerContext, playerIndex) => {
             const leftThumbstickVector = context.getLeftThumbstickVector(
@@ -481,6 +485,8 @@ class MainGame implements SplitScreenGame {
             });
 
             this.requireMap().render(context, region, lag, playerIndex);
+
+            this.particleSystem.render(context, region, lag, playerIndex, this);
 
         }
     }
